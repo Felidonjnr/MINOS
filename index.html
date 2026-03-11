@@ -574,16 +574,16 @@ function pickModel(text){
   if(t.includes('deep study')||t.includes('greek')||t.includes('hebrew')||t.includes('scholarly')||t.includes('sunday message')||t.includes('full sermon')||t.includes('full message'))return SONNET;
   return HAIKU;
 }
-function modelLabel(m){return m===SONNET?'Sonnet ⚡':'Haiku ⚡';}
+function modelLabel(m){return m===SONNET?'Sonnet (Deep)':'Haiku (Fast)';}
 
-var SYS=`You are MINOS — Ministry Intelligence & Operational System — serving Rev. Emmanuel Udoh, senior pastor of Light Assembly Bible Church, Ikot Ambon, Akwa Ibom State, Nigeria.
+var SYS=`You are MINOS -- Ministry Intelligence & Operational System -- serving Rev. Emmanuel Udoh, senior pastor of Light Assembly Bible Church, Ikot Ambon, Akwa Ibom State, Nigeria.
 
 CHURCH: Light Assembly Bible Church, Ikot Ambon, Akwa Ibom, Nigeria
-PASTOR: Rev. Emmanuel Udoh — 35 years experience, Pentecostal, apostolic, prophetic
+PASTOR: Rev. Emmanuel Udoh -- 35 years experience, Pentecostal, apostolic, prophetic
 CONGREGATION: ~20 members, goal 40. 40% youth 15-35, rural/urban, Ibibio culture
 SCHEDULE: Sunday 7am Workers Class + Main Service | Wednesday Prayer Meeting | Thursday Midweek Word and Communion | Friday Prayer Meeting | Saturday Community Outreach | Monthly Tarry Night
 
-VOICE: Always speak DIRECTLY to Pastor — "Pastor, you..." Never about him. Rich, anointed, weighty language. Never shallow or generic.
+VOICE: Always speak DIRECTLY to Pastor -- "Pastor, you..." Never about him. Rich, anointed, weighty language. Never shallow or generic.
 PARTNERS: Covenant partners not donors. Rich, professional, weighty, honoring. Never begging. Never shallow.
 INSPIRATIONS (extract principles only, never copy): Oyedepo, Adeboye, Uma Ukpai, Johnson Suleman, Arome Osaghae, Paul Enenche, Benson Idahosa, Olusola Areogun
 
@@ -593,17 +593,17 @@ Ami ikwo Abasi Mfon = I call upon the Spirit of God
 Ufan Abasi = grace of God
 Abasi owo = God reigns
 
-CURRENT SERIES: REBUILD — What God Does With Broken Things
-Week 1: The Potter Still Has His Hands On You — Jeremiah 18:1-6
-Week 2: Dry Bones Can Dance — Ezekiel 37:1-10
-Week 3: Build On The Right Foundation — Matthew 7:24-27
-Week 4: Fully Alive — John 10:10
+CURRENT SERIES: REBUILD -- What God Does With Broken Things
+Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6
+Week 2: Dry Bones Can Dance -- Ezekiel 37:1-10
+Week 3: Build On The Right Foundation -- Matthew 7:24-27
+Week 4: Fully Alive -- John 10:10
 
-CONTENT FORMATS — follow exactly, use markdown throughout:
+CONTENT FORMATS -- follow exactly, use markdown throughout:
 
-════════════════════════════════════
+=====================================
 SUNDAY MESSAGE FORMAT
-════════════════════════════════════
+=====================================
 A complete, rich, step-by-step preaching guide Pastor can follow and preach directly from.
 
 STRUCTURE:
@@ -611,67 +611,67 @@ STRUCTURE:
 - OPEN: Hook illustration that connects to the sermon truth
 - BODY SECTIONS (3-5 sections): Each section contains:
   * Section heading
-  * KEY POINT — bold, one sentence, the truth of that section stated clearly
-  * BACKUP SCRIPTURE — the exact verse(s) that prove that point, quoted in full
-  * EXPLANATION — rich unpacking of the point for the congregation, written as Pastor would say it, 3-5 paragraphs
-  * WORD STUDY where relevant — marked ⚡ — Greek/Hebrew word, meaning, pause instruction
-  * ILLUSTRATION — marked 📖 — full story with turn instruction
-  * DEMONSTRATION — marked 🎭 — props listed, step by step actions
-  * IBIBIO MOMENT — marked 🔥 — speak slowly, pause after
+  * KEY POINT -- bold, one sentence, the truth of that section stated clearly
+  * BACKUP SCRIPTURE -- the exact verse(s) that prove that point, quoted in full
+  * EXPLANATION -- rich unpacking of the point for the congregation, written as Pastor would say it, 3-5 paragraphs
+  * WORD STUDY where relevant -- marked [lightning] -- Greek/Hebrew word, meaning, pause instruction
+  * ILLUSTRATION -- marked [book] -- full story with turn instruction
+  * DEMONSTRATION -- marked [theater] -- props listed, step by step actions
+  * IBIBIO MOMENT -- marked [fire] -- speak slowly, pause after
 - 5-DAY APPLICATION TABLE
 - CLOSE AND ALTAR CALL:
   * Final Key Point with Backup Scripture
   * Explanation leading to altar
   * Two groups named specifically
   * Closing prayer written in full
-- POWER POINTS FOR CONGREGATION NOTES — bullet list of every key point
+- POWER POINTS FOR CONGREGATION NOTES -- bullet list of every key point
 
-════════════════════════════════════
+=====================================
 SERMON NOTES FORMAT
-════════════════════════════════════
+=====================================
 A compressed, faithful, point-by-point mirror of the Sunday Message that Pastor can hold in hand and preach from. Easy to follow. Nothing scattered.
 
-STRUCTURE — every section must contain:
+STRUCTURE -- every section must contain:
 - Section heading
-- 🔑 KEY POINT — stated boldly in one sentence
-- 📖 Backup Scripture — verse reference and short quote
-- Explanation — 2-3 lines maximum, punchy, preachable
+- [key] KEY POINT -- stated boldly in one sentence
+- [book] Backup Scripture -- verse reference and short quote
+- Explanation -- 2-3 lines maximum, punchy, preachable
 - Markers exactly as follows:
-  * 📖 ILLUSTRATION — story name + one-line trigger
-  * 🎭 DEMONSTRATION — props listed, one-line action
-  * ⚡ WORD STUDY — word, language, core meaning, one application line
-  * 🔥 IBIBIO MOMENT — phrase written out, speak slowly noted
+  * [book] ILLUSTRATION -- story name + one-line trigger
+  * [theater] DEMONSTRATION -- props listed, one-line action
+  * [lightning] WORD STUDY -- word, language, core meaning, one application line
+  * [fire] IBIBIO MOMENT -- phrase written out, speak slowly noted
 - 5-day application table
-- Altar call — two groups named
+- Altar call -- two groups named
 - Closing prayer in full
 - POWER POINTS bullet list at end
 
 Nothing important dropped from Sunday Message. Same structure, same flow, same illustrations summarised. Congregation can take notes point by point.
 
-════════════════════════════════════
+=====================================
 DEEP STUDY FORMAT
-════════════════════════════════════
-Private scholarly study room for Pastor only. 7 complete layers — never cut short:
-1. Anchor Texts — primary and supporting scriptures quoted in full
-2. Greek/Hebrew Word Studies — original words, roots, meanings, usage across scripture
-3. Historical and Cultural Background — context, setting, original audience
-4. Scholarly Voices — minimum 6 named scholars, their exact position on the text
-5. Theological Framework — doctrine, cross-references, biblical theology connections
-6. Local Illustrations — Ikot Ambon and Akwa Ibom specific context, culture, stories
-7. Pastoral Application — how Pastor brings this specifically to Light Assembly
+=====================================
+Private scholarly study room for Pastor only. 7 complete layers -- never cut short:
+1. Anchor Texts -- primary and supporting scriptures quoted in full
+2. Greek/Hebrew Word Studies -- original words, roots, meanings, usage across scripture
+3. Historical and Cultural Background -- context, setting, original audience
+4. Scholarly Voices -- minimum 6 named scholars, their exact position on the text
+5. Theological Framework -- doctrine, cross-references, biblical theology connections
+6. Local Illustrations -- Ikot Ambon and Akwa Ibom specific context, culture, stories
+7. Pastoral Application -- how Pastor brings this specifically to Light Assembly
 
-════════════════════════════════════
+=====================================
 OTHER FORMATS
-════════════════════════════════════
+=====================================
 WHATSAPP DEVOTIONAL: 7-day series. One truth per day. Scripture, truth, illustration or story, action point, declaration. Short, punchy, powerful.
 
-FACEBOOK POSTS: 7 story-style posts. Real verifiable or biblical stories only — never fabricated. Hook opening, truth, application, call to engage.
+FACEBOOK POSTS: 7 story-style posts. Real verifiable or biblical stories only -- never fabricated. Hook opening, truth, application, call to engage.
 
 PARTNER DEVOTIONAL: Rich, weighty, prophetic throughout. Scripture, revelation, declaration, activation. Covenant partners not donors.
 
 MORNING BRIEF: Scripture for the day, church status and focus, weekly preparation note, preaching growth challenge for Pastor, cultural awareness for Akwa Ibom.
 
-PRAYER GUIDE: Structured agenda — opening worship direction, themed prayer sections, supporting scriptures, declaration points, closing prayer in full.
+PRAYER GUIDE: Structured agenda -- opening worship direction, themed prayer sections, supporting scriptures, declaration points, closing prayer in full.
 
 Be complete. Be excellent. Never cut short. Use full markdown formatting throughout every response.`
 
@@ -691,7 +691,7 @@ function initFB(){
     db=firebase.database();
     db.ref('library').on('value',function(snap){items=snap.val()||{};updateBadges();renderLib();});
     setSyncStatus('live');
-  }catch(e){setSyncStatus('err');toast('Firebase error — check settings');}
+  }catch(e){setSyncStatus('err');toast('Firebase error -- check settings');}
 }
 
 function setSyncStatus(st){
@@ -733,7 +733,7 @@ function parseMD(md){
   function cUL(){if(inUL){html+='</ul>';inUL=false;}}
   function cOL(){if(inOL){html+='</ol>';inOL=false;}}
   function cT(){if(!inT)return;var t='<table>';rows.forEach(function(r,i){t+='<tr>';r.forEach(function(c){t+=i===0?'<th>'+c+'</th>':'<td>'+c+'</td>';});t+='</tr>';});html+=t+'</table>';inT=false;rows=[];}
-  function il(s){return s.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/_(.+?)_/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>');}
+  function il(s){return s.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/_(.+?)_/g,'<em>$1</em>').replace(/[`](.+?)[`]/g,'<code>$1</code>');}
   lines.forEach(function(line){
     var iT=/^\|(.+)\|$/.test(line),iS=/^\|[\s\-\|:]+\|$/.test(line);
     if(iT&&!iS){cUL();cOL();if(!inT)inT=true;rows.push(line.split('|').filter(function(_,i,a){return i>0&&i<a.length-1;}).map(function(c){return il(c.trim());}));return;}
@@ -754,7 +754,7 @@ function parseMD(md){
   cUL();cOL();cT();return html;
 }
 
-function stripMD(md){return md.replace(/#{1,6}\s/g,'').replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').replace(/__(.+?)__/g,'$1').replace(/_(.+?)_/g,'$1').replace(/`(.+?)`/g,'$1').replace(/^[-*]\s/gm,'').replace(/^\d+\.\s/gm,'').replace(/^>\s/gm,'').replace(/^\|.+$/gm,'').replace(/^[-\s|:]+$/gm,'').replace(/^-{3,}$/gm,'').trim();}
+function stripMD(md){return md.replace(/#{1,6}\s/g,'').replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').replace(/__(.+?)__/g,'$1').replace(/_(.+?)_/g,'$1').replace(/[`](.+?)[`]/g,'$1').replace(/^[-*]\s/gm,'').replace(/^\d+\.\s/gm,'').replace(/^>\s/gm,'').replace(/^\|.+$/gm,'').replace(/^[-\s|:]+$/gm,'').replace(/^-{3,}$/gm,'').trim();}
 function prev(md){return stripMD(md).replace(/\n+/g,' ').substring(0,120);}
 
 // MAIN TABS
@@ -806,7 +806,7 @@ async function sendChat(){
   var inp=document.getElementById('chatInp');
   var text=inp.value.trim();
   if(!text||generating)return;
-  if(!ak()){toast('No API key — open Settings');return;}
+  if(!ak()){toast('No API key -- open Settings');return;}
   inp.value='';inp.style.height='auto';
   generating=true;document.getElementById('sendBtn').disabled=true;
   addMsg('user',text);
@@ -868,7 +868,7 @@ function detectCat(text){
 // SAVE TO LIBRARY
 function saveToLib(content){
   var tm=content.match(/^#{1,3}\s+(.+)$/m);
-  var title=tm?tm[1].replace(/\*\*/g,'').trim():('MINOS Content — '+new Date().toLocaleDateString('en-GB'));
+  var title=tm?tm[1].replace(/\*\*/g,'').trim():('MINOS Content -- '+new Date().toLocaleDateString('en-GB'));
   var lastUserMsg=chatHistory.length>=2?chatHistory[chatHistory.length-2].content:'';
   var cat=detectCat(lastUserMsg+' '+content.substring(0,200));
   var sm=lastUserMsg.match(/[1-3]?\s?[A-Za-z]+\s+\d+[\:\.]\d+[\-\d]*/);
@@ -941,7 +941,7 @@ function openRead(id){
   var cfg=CATS[item.cat]||CATS.other;
   var d=new Date(item.date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   document.getElementById('readTitle').textContent=item.title;
-  document.getElementById('readCatTxt').textContent=cfg.l+' · '+d+(item.scripture?' · '+item.scripture:'');
+  document.getElementById('readCatTxt').textContent=cfg.l+' | '+d+(item.scripture?' | '+item.scripture:'');
   document.getElementById('readContent').innerHTML=parseMD(item.content);
   var ov=document.getElementById('readOv');ov.classList.add('on');
   ov.querySelector('.read-body').scrollTop=0;
@@ -957,12 +957,12 @@ document.getElementById('confirmDel').addEventListener('click',function(){if(del
 document.getElementById('settingsBtn').addEventListener('click',function(){document.getElementById('settingsKey').value=ak();document.getElementById('settingsFbDb').value=g(SK.fbd);document.getElementById('settingsOv').classList.add('on');});
 document.getElementById('settingsClose').addEventListener('click',function(){document.getElementById('settingsOv').classList.remove('on');});
 document.getElementById('settingsOv').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
-document.getElementById('settingsSave').addEventListener('click',function(){var k=document.getElementById('settingsKey').value.trim();var fd=document.getElementById('settingsFbDb').value.trim();if(k)s(SK.ak,k);if(fd)s(SK.fbd,fd);document.getElementById('settingsOv').classList.remove('on');toast('Saved — reloading...');setTimeout(function(){location.reload();},1200);});
+document.getElementById('settingsSave').addEventListener('click',function(){var k=document.getElementById('settingsKey').value.trim();var fd=document.getElementById('settingsFbDb').value.trim();if(k)s(SK.ak,k);if(fd)s(SK.fbd,fd);document.getElementById('settingsOv').classList.remove('on');toast('Saved -- reloading...');setTimeout(function(){location.reload();},1200);});
 
 // TOAST
 function toast(msg){var el=document.getElementById('toast');el.innerHTML=msg;el.classList.add('on');setTimeout(function(){el.classList.remove('on');},2800);}
 
-// ══ READ ALOUD ══
+// == READ ALOUD ==
 var ttsActive=false;
 var ttsPaused=false;
 var ttsUtterance=null;
@@ -1008,14 +1008,14 @@ function startReadAloudFrom(charPos){
   };
   ttsUtterance.onstart=function(){
     ttsActive=true;ttsPaused=false;
-    document.getElementById('readAloudBtn').textContent='⏸ Pause';
+    document.getElementById('readAloudBtn').textContent='Pause';
     document.getElementById('readAloudBtn').classList.add('speaking');
     document.getElementById('readAloudBar').style.display='flex';
     document.getElementById('readAloudStatus').textContent='Reading aloud...';
   };
   ttsUtterance.onend=function(){
     ttsActive=false;ttsPaused=false;
-    document.getElementById('readAloudBtn').textContent='🔊 Read';
+    document.getElementById('readAloudBtn').textContent='Read Aloud';
     document.getElementById('readAloudBtn').classList.remove('speaking');
     document.getElementById('readAloudBar').style.display='none';
     toast('Finished reading');
@@ -1023,7 +1023,7 @@ function startReadAloudFrom(charPos){
   ttsUtterance.onerror=function(e){
     if(e.error==='interrupted')return;
     ttsActive=false;
-    document.getElementById('readAloudBtn').textContent='🔊 Read';
+    document.getElementById('readAloudBtn').textContent='Read Aloud';
     document.getElementById('readAloudBtn').classList.remove('speaking');
     document.getElementById('readAloudBar').style.display='none';
   };
@@ -1048,8 +1048,7 @@ function rewindReadAloud(){
   var newPos=Math.max(0,ttsCharIndex-rewindChars);
   // Find nearest sentence start so it sounds natural
   var slice=ttsFullText.slice(0,newPos);
-  var lastSentence=Math.max(slice.lastIndexOf('. '),slice.lastIndexOf('! '),slice.lastIndexOf('? '),slice.lastIndexOf('
-'));
+  var lastSentence=Math.max(slice.lastIndexOf(". "),slice.lastIndexOf("! "),slice.lastIndexOf("? "),slice.lastIndexOf("\n"));
   newPos=lastSentence>0?lastSentence+2:newPos;
   document.getElementById('readAloudStatus').textContent='Rewinding...';
   startReadAloudFrom(newPos);
@@ -1060,13 +1059,13 @@ function pauseReadAloud(){
   if(ttsPaused){
     window.speechSynthesis.resume();
     ttsPaused=false;
-    document.getElementById('readAloudBtn').textContent='⏸ Pause';
+    document.getElementById('readAloudBtn').textContent='Pause';
     document.getElementById('readAloudPause').textContent='Pause';
     document.getElementById('readAloudStatus').textContent='Reading aloud...';
   } else {
     window.speechSynthesis.pause();
     ttsPaused=true;
-    document.getElementById('readAloudBtn').textContent='▶ Resume';
+    document.getElementById('readAloudBtn').textContent='Resume';
     document.getElementById('readAloudPause').textContent='Resume';
     document.getElementById('readAloudStatus').textContent='Paused';
   }
@@ -1076,7 +1075,7 @@ function stopReadAloud(){
   window.speechSynthesis.cancel();
   ttsActive=false;ttsPaused=false;
   var btn=document.getElementById('readAloudBtn');
-  if(btn){btn.textContent='🔊 Read';btn.classList.remove('speaking');}
+  if(btn){btn.textContent='Read Aloud';btn.classList.remove('speaking');}
   var bar=document.getElementById('readAloudBar');
   if(bar)bar.style.display='none';
 }
