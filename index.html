@@ -248,6 +248,9 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
 .read-info{flex:1;min-width:0}
 .read-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .read-cat-txt{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;font-weight:400}
+.read-aloud-btn{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 14px;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s}
+.read-aloud-btn:hover{background:rgba(255,255,255,.3)}
+.read-aloud-btn.speaking{background:rgba(255,200,0,.3);border-color:rgba(255,200,0,.6);color:#ffd700}
 .read-copy{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 16px;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s}
 .read-copy:hover{background:rgba(255,255,255,.3)}
 .read-stripe{background:linear-gradient(90deg,var(--gold),#fbbf24,var(--gold));height:4px;flex-shrink:0}
@@ -489,7 +492,15 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
       <div class="read-title" id="readTitle"></div>
       <div class="read-cat-txt" id="readCatTxt"></div>
     </div>
+    <button class="read-aloud-btn" id="readAloudBtn" title="Read Aloud">&#128266; Read</button>
     <button class="read-copy" id="readCopy">&#128203; Copy</button>
+  </div>
+  <!-- READ ALOUD PROGRESS BAR -->
+  <div id="readAloudBar" style="display:none;background:var(--blue-light);padding:8px 18px;align-items:center;gap:8px;border-bottom:2px solid var(--border2);flex-wrap:wrap">
+    <div style="font-size:13px;color:var(--blue3);font-weight:600;flex:1;min-width:100px" id="readAloudStatus">Reading...</div>
+    <button id="readAloudRewind" title="Rewind 10 seconds" style="background:none;border:2px solid var(--blue3);border-radius:8px;padding:5px 13px;font-size:13px;font-weight:700;cursor:pointer;color:var(--blue3)">&#8630; 10s</button>
+    <button id="readAloudPause" style="background:var(--blue3);color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer">Pause</button>
+    <button id="readAloudStop" style="background:none;border:2px solid var(--border);border-radius:8px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text3)">Stop</button>
   </div>
   <div class="read-stripe"></div>
   <div class="read-body">
@@ -809,7 +820,7 @@ async function sendChat(){
 
   try{
     var res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ak(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model,max_tokens:4000,system:SYS,messages:chatHistory.slice(-10)})});
-    if(!res.ok){var e=await res.json().catch(function(){return{};});throw new Error((e.error&&e.error.message)||'API error '+res.status);}
+    if(!res.ok){var e=await res.json().catch(function(){return{};});var msg=(e.error&&e.error.message)||'HTTP '+res.status+' error';throw new Error('API Error '+res.status+': '+msg);}
     var data=await res.json();
     var reply=data.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('\n');
     if(!reply)throw new Error('Empty response');
@@ -935,7 +946,7 @@ function openRead(id){
   var ov=document.getElementById('readOv');ov.classList.add('on');
   ov.querySelector('.read-body').scrollTop=0;
 }
-document.getElementById('readBack').addEventListener('click',function(){document.getElementById('readOv').classList.remove('on');});
+// readBack handled in Read Aloud section above
 document.getElementById('readCopy').addEventListener('click',function(){var item=items[readId];if(item)copyText(item.content,this);});
 
 // DELETE
@@ -950,6 +961,148 @@ document.getElementById('settingsSave').addEventListener('click',function(){var 
 
 // TOAST
 function toast(msg){var el=document.getElementById('toast');el.innerHTML=msg;el.classList.add('on');setTimeout(function(){el.classList.remove('on');},2800);}
+
+// ══ READ ALOUD ══
+var ttsActive=false;
+var ttsPaused=false;
+var ttsUtterance=null;
+
+function stripForSpeech(html){
+  // Remove HTML tags and clean up for speech
+  var tmp=document.createElement('div');
+  tmp.innerHTML=html;
+  var text=tmp.textContent||tmp.innerText||'';
+  // Clean up excessive whitespace
+  return text.replace(/\s+/g,' ').replace(/([.!?])\s*/g,'$1 ').trim();
+}
+
+// TTS word tracking for rewind
+var ttsFullText='';
+var ttsCharIndex=0;
+var ttsStartTime=0;
+var ttsCharsPerSecond=14; // approx characters per second at rate 0.92
+
+function startReadAloudFrom(charPos){
+  if(!window.speechSynthesis){toast('Read Aloud is not supported on this browser');return;}
+  stopReadAloud(true); // stop silently
+
+  var text=charPos>0?ttsFullText.slice(charPos):ttsFullText;
+  if(!text){toast('Nothing to read');return;}
+
+  ttsCharIndex=charPos;
+  ttsStartTime=Date.now();
+
+  ttsUtterance=new SpeechSynthesisUtterance(text);
+  ttsUtterance.rate=0.92;
+  ttsUtterance.pitch=1.0;
+  ttsUtterance.volume=1.0;
+
+  var voices=window.speechSynthesis.getVoices();
+  var preferred=voices.find(function(v){return v.lang==='en-GB'&&v.localService;})
+    ||voices.find(function(v){return v.lang.startsWith('en')&&v.localService;})
+    ||voices.find(function(v){return v.lang.startsWith('en');});
+  if(preferred)ttsUtterance.voice=preferred;
+
+  ttsUtterance.onboundary=function(e){
+    if(e.name==='word')ttsCharIndex=charPos+(e.charIndex||0);
+  };
+  ttsUtterance.onstart=function(){
+    ttsActive=true;ttsPaused=false;
+    document.getElementById('readAloudBtn').textContent='⏸ Pause';
+    document.getElementById('readAloudBtn').classList.add('speaking');
+    document.getElementById('readAloudBar').style.display='flex';
+    document.getElementById('readAloudStatus').textContent='Reading aloud...';
+  };
+  ttsUtterance.onend=function(){
+    ttsActive=false;ttsPaused=false;
+    document.getElementById('readAloudBtn').textContent='🔊 Read';
+    document.getElementById('readAloudBtn').classList.remove('speaking');
+    document.getElementById('readAloudBar').style.display='none';
+    toast('Finished reading');
+  };
+  ttsUtterance.onerror=function(e){
+    if(e.error==='interrupted')return;
+    ttsActive=false;
+    document.getElementById('readAloudBtn').textContent='🔊 Read';
+    document.getElementById('readAloudBtn').classList.remove('speaking');
+    document.getElementById('readAloudBar').style.display='none';
+  };
+
+  window.speechSynthesis.speak(ttsUtterance);
+}
+
+function startReadAloud(){
+  if(!window.speechSynthesis){toast('Read Aloud is not supported on this browser');return;}
+  var item=items[readId];
+  if(!item)return;
+  ttsFullText=stripForSpeech(document.getElementById('readContent').innerHTML);
+  if(!ttsFullText){toast('Nothing to read');return;}
+  ttsCharIndex=0;
+  startReadAloudFrom(0);
+}
+
+function rewindReadAloud(){
+  if(!ttsFullText)return;
+  // Calculate how far back 10 seconds is in characters
+  var rewindChars=Math.round(ttsCharsPerSecond*10);
+  var newPos=Math.max(0,ttsCharIndex-rewindChars);
+  // Find nearest sentence start so it sounds natural
+  var slice=ttsFullText.slice(0,newPos);
+  var lastSentence=Math.max(slice.lastIndexOf('. '),slice.lastIndexOf('! '),slice.lastIndexOf('? '),slice.lastIndexOf('
+'));
+  newPos=lastSentence>0?lastSentence+2:newPos;
+  document.getElementById('readAloudStatus').textContent='Rewinding...';
+  startReadAloudFrom(newPos);
+}
+
+function pauseReadAloud(){
+  if(!ttsActive)return;
+  if(ttsPaused){
+    window.speechSynthesis.resume();
+    ttsPaused=false;
+    document.getElementById('readAloudBtn').textContent='⏸ Pause';
+    document.getElementById('readAloudPause').textContent='Pause';
+    document.getElementById('readAloudStatus').textContent='Reading aloud...';
+  } else {
+    window.speechSynthesis.pause();
+    ttsPaused=true;
+    document.getElementById('readAloudBtn').textContent='▶ Resume';
+    document.getElementById('readAloudPause').textContent='Resume';
+    document.getElementById('readAloudStatus').textContent='Paused';
+  }
+}
+
+function stopReadAloud(){
+  window.speechSynthesis.cancel();
+  ttsActive=false;ttsPaused=false;
+  var btn=document.getElementById('readAloudBtn');
+  if(btn){btn.textContent='🔊 Read';btn.classList.remove('speaking');}
+  var bar=document.getElementById('readAloudBar');
+  if(bar)bar.style.display='none';
+}
+
+document.getElementById('readAloudBtn').addEventListener('click',function(){
+  if(!ttsActive){startReadAloud();}
+  else{pauseReadAloud();}
+});
+document.getElementById('readAloudPause').addEventListener('click',pauseReadAloud);
+document.getElementById('readAloudRewind').addEventListener('click',rewindReadAloud);
+document.getElementById('readAloudStop').addEventListener('click',function(){
+  stopReadAloud();toast('Stopped');
+});
+
+// Stop reading when closing the read view
+document.getElementById('readBack').addEventListener('click',function(){
+  stopReadAloud();
+  document.getElementById('readOv').classList.remove('on');
+});
+
+// Load voices when available
+if(window.speechSynthesis){
+  window.speechSynthesis.onvoiceschanged=function(){
+    window.speechSynthesis.getVoices(); // pre-load
+  };
+}
 
 // INSTALL BANNER
 function showInstallBanner(){
