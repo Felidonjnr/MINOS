@@ -496,7 +496,7 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
     <button class="read-copy" id="readCopy">&#128203; Copy</button>
   </div>
   <!-- READ ALOUD PROGRESS BAR -->
-  <div id="readAloudBar" style="display:none;background:var(--blue-light);padding:8px 18px;align-items:center;gap:8px;border-bottom:2px solid var(--border2);flex-wrap:wrap">
+  <div id="readAloudBar" style="display:none;background:var(--blue-light);padding:8px 18px;gap:8px;border-bottom:2px solid var(--border2);flex-wrap:wrap;align-items:center">
     <div style="font-size:13px;color:var(--blue3);font-weight:600;flex:1;min-width:100px" id="readAloudStatus">Reading...</div>
     <button id="readAloudRewind" title="Rewind 10 seconds" style="background:none;border:2px solid var(--blue3);border-radius:8px;padding:5px 13px;font-size:13px;font-weight:700;cursor:pointer;color:var(--blue3)">&#8630; 10s</button>
     <button id="readAloudPause" style="background:var(--blue3);color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer">Pause</button>
@@ -968,12 +968,11 @@ var ttsPaused=false;
 var ttsUtterance=null;
 
 function stripForSpeech(html){
-  // Remove HTML tags and clean up for speech
   var tmp=document.createElement('div');
   tmp.innerHTML=html;
   var text=tmp.textContent||tmp.innerText||'';
-  // Clean up excessive whitespace
-  return text.replace(/\s+/g,' ').replace(/([.!?])\s*/g,'$1 ').trim();
+  text=text.replace(/[ \t]{2,}/g,' ').trim();
+  return text;
 }
 
 // TTS word tracking for rewind
@@ -1028,6 +1027,7 @@ function startReadAloudFrom(charPos){
     document.getElementById('readAloudBar').style.display='none';
   };
 
+  window.speechSynthesis.cancel();
   window.speechSynthesis.speak(ttsUtterance);
 }
 
@@ -1080,28 +1080,65 @@ function stopReadAloud(){
   if(bar)bar.style.display='none';
 }
 
-document.getElementById('readAloudBtn').addEventListener('click',function(){
-  if(!ttsActive){startReadAloud();}
-  else{pauseReadAloud();}
-});
-document.getElementById('readAloudPause').addEventListener('click',pauseReadAloud);
-document.getElementById('readAloudRewind').addEventListener('click',rewindReadAloud);
-document.getElementById('readAloudStop').addEventListener('click',function(){
-  stopReadAloud();toast('Stopped');
-});
+// Wire up read aloud controls safely
+(function(){
+  var btn=document.getElementById('readAloudBtn');
+  var pauseBtn=document.getElementById('readAloudPause');
+  var rewindBtn=document.getElementById('readAloudRewind');
+  var stopBtn=document.getElementById('readAloudStop');
+  var backBtn=document.getElementById('readBack');
 
-// Stop reading when closing the read view
-document.getElementById('readBack').addEventListener('click',function(){
-  stopReadAloud();
-  document.getElementById('readOv').classList.remove('on');
-});
+  if(btn) btn.addEventListener('click',function(){
+    if(!window.speechSynthesis){alert('Text-to-speech is not available on this browser.');return;}
+    if(!ttsActive){
+      // Must call speak directly inside click handler for Android
+      var content=document.getElementById('readContent');
+      if(!content||!content.textContent.trim()){toast('Nothing to read');return;}
+      ttsFullText=content.textContent||content.innerText||'';
+      ttsCharIndex=0;
+      ttsActive=false;
+      window.speechSynthesis.cancel();
+      var utt=new SpeechSynthesisUtterance(ttsFullText);
+      utt.rate=0.9;utt.pitch=1.0;utt.volume=1.0;
+      var vv=window.speechSynthesis.getVoices();
+      var vp=vv.find(function(v){return v.lang==='en-GB';})
+             ||vv.find(function(v){return v.lang.startsWith('en');});
+      if(vp)utt.voice=vp;
+      ttsUtterance=utt;
+      utt.onstart=function(){
+        ttsActive=true;ttsPaused=false;
+        btn.textContent='Pause';btn.classList.add('speaking');
+        var bar=document.getElementById('readAloudBar');
+        if(bar)bar.style.display='flex';
+        var st=document.getElementById('readAloudStatus');
+        if(st)st.textContent='Reading aloud...';
+      };
+      utt.onend=utt.onerror=function(){
+        ttsActive=false;ttsPaused=false;
+        btn.textContent='Read Aloud';btn.classList.remove('speaking');
+        var bar=document.getElementById('readAloudBar');
+        if(bar)bar.style.display='none';
+      };
+      utt.onboundary=function(e){if(e.name==='word')ttsCharIndex=e.charIndex||0;};
+      window.speechSynthesis.speak(utt);
+    } else {
+      pauseReadAloud();
+    }
+  });
+  if(pauseBtn) pauseBtn.addEventListener('click',pauseReadAloud);
+  if(rewindBtn) rewindBtn.addEventListener('click',rewindReadAloud);
+  if(stopBtn) stopBtn.addEventListener('click',function(){stopReadAloud();toast('Stopped');});
+  if(backBtn) backBtn.addEventListener('click',function(){
+    stopReadAloud();
+    document.getElementById('readOv').classList.remove('on');
+  });
 
-// Load voices when available
-if(window.speechSynthesis){
-  window.speechSynthesis.onvoiceschanged=function(){
-    window.speechSynthesis.getVoices(); // pre-load
-  };
-}
+  // Pre-load voices
+  if(window.speechSynthesis){
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};
+  }
+})();
 
 // INSTALL BANNER
 function showInstallBanner(){
