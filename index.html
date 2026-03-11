@@ -307,6 +307,15 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
 .cpr{background:#f3e8ff;color:#6b21a8}.cpra{background:#9333ea}
 .cst{background:#cffafe;color:#164e63}.csta{background:#0891b2}
 .co{background:#f1f5f9;color:#475569}.coa{background:#64748b}
+
+/* ── COST BAR ── */
+.cost-bar{background:var(--bg2);border-top:2px solid var(--border2);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-family:'Source Serif 4',serif;flex-shrink:0;font-weight:500}
+.cb-model{font-weight:800;padding:2px 10px;border-radius:10px;font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+.cb-s{background:#dbeafe;color:#1e3a8a}
+.cb-h{background:#dcfce7;color:#14532d}
+.cb-info{color:var(--text2);flex:1}
+.cb-info strong{color:var(--black);font-weight:700}
+.cb-session{color:var(--text2);font-size:13px;margin-left:auto;font-weight:600}
 </style>
 </head>
 <body>
@@ -413,6 +422,9 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
         </div>
       </div>
 
+      <!-- COST BAR -->
+      <div id="costBar" class="cost-bar" style="display:none"></div>
+
       <div class="chat-footer">
         <div class="chat-row">
           <textarea class="chat-inp" id="chatInp" placeholder="Ask MINOS anything — build a sermon, plan the week, generate devotionals..." rows="1"></textarea>
@@ -513,41 +525,37 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
 <script>
 var SK={ak:'minos_ak',fbk:'minos_fbk',fba:'minos_fba',fbd:'minos_fbd',fbp:'minos_fbp',fbs:'minos_fbs',fbid:'minos_fbid'};
 var API='https://api.anthropic.com/v1/messages';
-var MODEL='claude-sonnet-4-20250514';
+var SONNET='claude-sonnet-4-20250514';
+var HAIKU='claude-haiku-4-5-20251001';
 var FBC={apiKey:'AIzaSyBahFRyVWBjc0yHIQlaKCFvYwcUZjIpuGA',authDomain:'minos-dashboard.firebaseapp.com',databaseURL:'https://minos-dashboard-default-rtdb.firebaseio.com',projectId:'minos-dashboard',storageBucket:'minos-dashboard.firebasestorage.app',messagingSenderId:'847823517233',appId:'1:847823517233:web:d9eb5237172856a4870710'};
 
 var db=null,items={},activeCat='all',libQ='',deleteId=null,readId=null,chatHistory=[],generating=false;
+var sessionTokensIn=0,sessionTokensOut=0,sessionCostTotal=0;
 
-var SYS=`You are MINOS — Ministry Intelligence & Operational System — serving Rev. Emmanuel Udoh, senior pastor of Light Assembly Bible Church, Ikot Ambon, Akwa Ibom State, Nigeria.
+var COST={sonnet:{in:3,out:15},haiku:{in:0.80,out:4}};
 
-CHURCH: Light Assembly Bible Church, Ikot Ambon, Akwa Ibom, Nigeria
-PASTOR: Rev. Emmanuel Udoh — 35 years experience, Pentecostal, apostolic, prophetic
-CONGREGATION: ~20 members, goal 40. 40% youth 15-35, rural/urban, Ibibio culture
-SCHEDULE: Sunday 7am Workers Class + Main Service | Wednesday Prayer | Thursday Midweek + Communion | Friday Prayer | Saturday Outreach | Monthly Tarry Night
+function pickModel(text){
+  var t=(text||'').toLowerCase();
+  if(t.includes('deep study')||t.includes('greek')||t.includes('hebrew')||t.includes('scholarly')||t.includes('sunday message')||t.includes('full sermon')||t.includes('full message'))return SONNET;
+  return HAIKU;
+}
+function modelLabel(m){return m===SONNET?'Sonnet ⚡':'Haiku ⚡';}
 
-VOICE: Speak DIRECTLY to Pastor — "Pastor, you..." never about him. Rich, anointed, weighty — never shallow.
-PARTNERS: Covenant partners not donors. Professional, honoring, never begging.
-INSPIRATIONS (principles only): Oyedepo, Adeboye, Uma Ukpai, Johnson Suleman, Arome Osaghae, Paul Enenche, Benson Idahosa, Olusola Areogun
-
-IBIBIO: Ami ikwo Abasi (I call on God) | Ami ikwo Abasi Mfon (I call on the Spirit) | Ufan Abasi (grace of God) | Abasi owo (God reigns)
-
-CURRENT SERIES: REBUILD — What God Does With Broken Things
-W1: The Potter Still Has His Hands On You — Jeremiah 18:1-6
-W2: Dry Bones Can Dance — Ezekiel 37:1-10
-W3: Build On The Right Foundation — Matthew 7:24-27
-W4: Fully Alive — John 10:10
-
-FORMATS:
-Sunday Message: Hook/Open, Word Studies (⚡), Illustrations (📖), Demonstrations (🎭), Ibibio Moment (🔥), 5-day Application table, Altar Call — two groups
-Sermon Notes: Compressed mirror of Sunday Message. Same structure, same illustrations summarised. Markers: 📖 ILLUSTRATION | 🎭 DEMONSTRATION | ⚡ WORD STUDY | 🔥 IBIBIO MOMENT
-Deep Study: 7 layers — Anchor Texts, Greek/Hebrew Word Studies, Historical Background, Scholarly Voices (6 scholars), Theological Framework, Local Illustrations, Pastoral Application
-WhatsApp Devotional: 7-day series. One truth per day. Short, powerful, action point at end of each day.
-Facebook Posts: 7 story-style posts. Real verifiable or biblical stories only — never fabricated local stories.
-Partner Devotional: Rich, weighty, prophetic declarations. Covenant partners not donors.
-Morning Brief: Scripture for the day, church update, weekly focus, preaching growth challenge, cultural awareness note.
-Prayer Guide: Structured agenda — themes, scriptures, declaration points, prayer flow.
-
-Be complete. Be excellent. Use markdown formatting throughout.`;
+var SYS=`MINOS: Ministry AI for Rev. Emmanuel Udoh, Light Assembly Bible Church, Ikot Ambon, Akwa Ibom, Nigeria.
+PASTOR: 35yrs Pentecostal, apostolic, prophetic. Address DIRECTLY as "Pastor, you..." never about him.
+CHURCH: ~20 members (goal 40). 40% youth 15-35. Ibibio culture.
+SCHEDULE: Sun 7am Workers+Service|Wed Prayer|Thu Midweek+Communion|Fri Prayer|Sat Outreach|Monthly Tarry Night.
+IBIBIO: Ami ikwo Abasi=I call on God|Ami ikwo Abasi Mfon=I call on the Spirit|Ufan Abasi=grace of God|Abasi owo=God reigns.
+SERIES: REBUILD-What God Does With Broken Things. W1:Potter/Jer18|W2:Dry Bones/Ezek37|W3:Foundation/Matt7|W4:Fully Alive/John10.
+VOICE: Rich, anointed, weighty. Partners=covenant not donors. Inspirations(principles only): Oyedepo,Adeboye,Uma Ukpai,Suleman,Osaghae,Enenche,Idahosa,Areogun.
+FORMATS(use markdown):
+Sunday Message: Hook,WordStudy(use symbol lightning bolt),Illustration(use book emoji),Demonstration(use theater emoji),IbibioMoment(use fire emoji),5-day table,Altar Call(2 groups)
+Sermon Notes: compressed mirror of Sunday Message, same structure+markers
+Deep Study: 7 layers-Texts,Greek/Hebrew,History,6Scholars,Theology,LocalIllustrations,PastoralApp
+WhatsApp Devo: 7 days, one truth+action per day|Facebook: 7 posts, real/biblical stories only
+Partner Devo: prophetic,weighty,covenant tone|Morning Brief: scripture,focus,preaching tip,cultural note
+Prayer Guide: themes,scriptures,declarations,flow
+Be complete and excellent.`;
 
 var CATS={sermon:{l:'Sermon',bc:'cs',ac:'csa'},notes:{l:'Pulpit Notes',bc:'cn',ac:'cna'},whatsapp:{l:'WhatsApp',bc:'cw',ac:'cwa'},facebook:{l:'Facebook',bc:'cf',ac:'cfa'},partner:{l:'Partner Devotional',bc:'cp',ac:'cpa'},prayer:{l:'Prayer Guide',bc:'cpr',ac:'cpra'},study:{l:'Deep Study',bc:'cst',ac:'csta'},other:{l:'Other',bc:'co',ac:'coa'}};
 
@@ -686,16 +694,40 @@ async function sendChat(){
   addMsg('user',text);
   chatHistory.push({role:'user',content:text});
   showTyping();
+
+  // Smart model selection
+  var model=pickModel(text);
+  var isSnnt=model===SONNET;
+  var costKey=isSnnt?'sonnet':'haiku';
+
   try{
-    var res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ak(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:4000,system:SYS,messages:chatHistory.slice(-12)})});
+    var res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ak(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model,max_tokens:4000,system:SYS,messages:chatHistory.slice(-10)})});
     if(!res.ok){var e=await res.json().catch(function(){return{};});throw new Error((e.error&&e.error.message)||'API error '+res.status);}
     var data=await res.json();
     var reply=data.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('\n');
     if(!reply)throw new Error('Empty response');
+
+    // Token tracking
+    var usage=data.usage||{};
+    var tIn=usage.input_tokens||0;
+    var tOut=usage.output_tokens||0;
+    sessionTokensIn+=tIn;sessionTokensOut+=tOut;
+    var costThis=((tIn/1000000)*COST[costKey].in)+((tOut/1000000)*COST[costKey].out);
+    sessionCostTotal+=costThis;
+    updateCostBar(model,tIn,tOut,costThis,sessionCostTotal);
+
     chatHistory.push({role:'assistant',content:reply});
     hideTyping();addMsg('minos',reply);
-  }catch(err){hideTyping();addMsg('minos','Error: '+err.message+'. Please check your API key in Settings.');}
+  }catch(err){hideTyping();addMsg('minos','\u26a0\ufe0f Error: '+err.message+'. Please check your API key in Settings.');}
   finally{generating=false;document.getElementById('sendBtn').disabled=false;}
+}
+
+function updateCostBar(model,tIn,tOut,costThis,costSession){
+  var bar=document.getElementById('costBar');
+  if(!bar)return;
+  var lbl=modelLabel(model);
+  var modelName=model===SONNET?'Sonnet (Deep)':'Haiku (Fast)';bar.innerHTML='<span class="cb-model cb-'+(model===SONNET?'s':'h')+'">'+modelName+'</span><span class="cb-info">This generation: <strong>$'+costThis.toFixed(4)+'</strong> ('+tIn+' in + '+tOut+' out tokens)</span><span class="cb-session">&#128179; Session total: <strong>$'+costSession.toFixed(4)+'</strong></span>';
+  bar.style.display='flex';
 }
 
 document.getElementById('sendBtn').addEventListener('click',sendChat);
