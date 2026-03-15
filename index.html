@@ -245,7 +245,7 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
 .read-aloud-btn{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 14px;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s}
 .read-aloud-btn:hover{background:rgba(255,255,255,.3)}
 .read-aloud-btn.speaking{background:rgba(255,200,0,.3);border-color:rgba(255,200,0,.6);color:#ffd700}
-.read-copy{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 16px;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s}
+.read-copy,.read-share,.read-file{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 14px;font-family:'Source Serif 4',serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s}
 .read-copy:hover{background:rgba(255,255,255,.3)}
 .read-stripe{background:linear-gradient(90deg,var(--gold),#fbbf24,var(--gold));height:4px;flex-shrink:0}
 .read-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--white)}
@@ -535,6 +535,8 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
     </div>
     <button class="read-aloud-btn" id="readAloudBtn" title="Read Aloud">&#128266; Read</button>
     <button class="read-copy" id="readCopy">&#128203; Copy</button>
+    <button class="read-share" id="readShare">&#10548; Share</button>
+    <button class="read-file" id="readFile">&#128190; File</button>
   </div>
   <!-- READ ALOUD PROGRESS BAR -->
   <div id="readAloudBar" style="display:none;background:var(--blue-light);padding:8px 18px;gap:8px;border-bottom:2px solid var(--border2);flex-wrap:wrap;align-items:center">
@@ -833,10 +835,12 @@ function addMsg(role,content){
   var div=document.createElement('div');
   div.className='msg'+(role==='user'?' msg-user':'');
   var rendered=role==='minos'?parseMD(content):content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  div.innerHTML='<div class="av '+(role==='user'?'av-u':'av-m')+'">'+(role==='user'?'&#128100;':'M')+'</div><div class="msg-wrap"><div class="bubble '+(role==='user'?'b-user':'b-minos md')+'">'+rendered+'</div><div class="msg-time">'+ftime()+'</div>'+(role==='minos'?'<div class="msg-btns"><button class="msg-btn save-btn">&#128218; Save to Library</button><button class="msg-btn copy-btn">&#128203; Copy Text</button></div>':'')+'</div>';
+  div.innerHTML='<div class="av '+(role==='user'?'av-u':'av-m')+'">'+(role==='user'?'&#128100;':'M')+'</div><div class="msg-wrap"><div class="bubble '+(role==='user'?'b-user':'b-minos md')+'">'+rendered+'</div><div class="msg-time">'+ftime()+'</div>'+(role==='minos'?'<div class="msg-btns"><button class="msg-btn save-btn">&#128218; Save</button><button class="msg-btn copy-btn">&#128203; Copy</button><button class="msg-btn share-btn">&#10548; Share</button><button class="msg-btn file-btn">&#128190; Save File</button></div>':'')+'</div>';
   if(role==='minos'){
     div.querySelector('.save-btn').addEventListener('click',function(){saveToLib(content);});
     div.querySelector('.copy-btn').addEventListener('click',function(){copyText(content,this);});
+    div.querySelector('.share-btn').addEventListener('click',function(){shareText(content,'MINOS - Ministry Content');});
+    div.querySelector('.file-btn').addEventListener('click',function(){saveFile(content,'MINOS-Content');});
   }
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
@@ -925,11 +929,35 @@ function saveToLib(content){
 // COPY
 function copyText(text,btn){
   var plain=stripMD(text);
-  function done(){toast('&#10003; Copied to clipboard');if(btn){var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o;},2200);}}
+  function done(){toast('Copied to clipboard');if(btn){var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o;},2200);}}
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(plain).then(done).catch(function(){fb(plain,done);});}
   else fb(plain,done);
 }
 function fb(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb();}catch(e){toast('Please copy manually');}document.body.removeChild(ta);}
+
+function shareText(text,title){
+  var plain=stripMD(text);
+  if(navigator.share){
+    navigator.share({title:title||'MINOS Content',text:plain})
+    .then(function(){toast('Shared successfully');})
+    .catch(function(e){if(e.name!=='AbortError'){copyText(text,null);toast('Share cancelled -- copied instead');}});
+  } else {
+    copyText(text,null);
+    toast('Share not supported -- copied to clipboard');
+  }
+}
+
+function saveFile(text,title){
+  var plain=stripMD(text);
+  var filename=(title||'MINOS-Content').replace(/[^a-zA-Z0-9 ]/g,'-').replace(/\s+/g,'-').slice(0,50)+'.txt';
+  var blob=new Blob([plain],{type:'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+  toast('Saved as '+filename);
+}
 
 // BADGES
 function updateBadges(){
@@ -991,6 +1019,8 @@ function openRead(id){
 }
 // readBack handled in Read Aloud section above
 document.getElementById('readCopy').addEventListener('click',function(){var item=items[readId];if(item)copyText(item.content,this);});
+document.getElementById('readShare').addEventListener('click',function(){var item=items[readId];if(item)shareText(item.content,item.title);});
+document.getElementById('readFile').addEventListener('click',function(){var item=items[readId];if(item)saveFile(item.content,item.title);});
 
 // DELETE
 document.getElementById('confirmKeep').addEventListener('click',function(){document.getElementById('confirmOv').classList.remove('on');deleteId=null;});
