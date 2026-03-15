@@ -589,6 +589,9 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
 
     <label class="sheet-lbl">Anthropic API Key</label>
     <input class="sheet-inp" id="settingsKey" type="password" placeholder="sk-ant-api03-...">
+    <label class="sheet-lbl" style="margin-top:14px">Google Cloud TTS Key (for Read Aloud)</label>
+    <input class="sheet-inp" id="settingsGcp" type="password" placeholder="AIzaSy...">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Get from console.cloud.google.com -- Cloud Text-to-Speech API</div>
     <label class="sheet-lbl">Firebase Database URL</label>
     <input class="sheet-inp" id="settingsFbDb" placeholder="https://...firebaseio.com">
     <button class="sheet-save" id="settingsSave">Save &amp; Reload</button>
@@ -1027,7 +1030,7 @@ document.getElementById('confirmKeep').addEventListener('click',function(){docum
 document.getElementById('confirmDel').addEventListener('click',function(){if(deleteId){dbDel(deleteId);toast('Deleted from shared library');}document.getElementById('confirmOv').classList.remove('on');deleteId=null;});
 
 // SETTINGS
-document.getElementById('settingsBtn').addEventListener('click',function(){document.getElementById('settingsKey').value=ak();document.getElementById('settingsFbDb').value=g(SK.fbd);document.getElementById('settingsOv').classList.add('on');});
+document.getElementById('settingsBtn').addEventListener('click',function(){document.getElementById('settingsKey').value=ak();document.getElementById('settingsFbDb').value=g(SK.fbd);document.getElementById('settingsGcp').value=g('minos_gcp_tts')||'';document.getElementById('settingsOv').classList.add('on');});
 document.getElementById('settingsClose').addEventListener('click',function(){document.getElementById('settingsOv').classList.remove('on');});
 document.getElementById('settingsOv').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
 document.getElementById('settingsSave').addEventListener('click',function(){var k=document.getElementById('settingsKey').value.trim();var fd=document.getElementById('settingsFbDb').value.trim();if(k)s(SK.ak,k);if(fd)s(SK.fbd,fd);document.getElementById('settingsOv').classList.remove('on');toast('Saved -- reloading...');setTimeout(function(){location.reload();},1200);});
@@ -1037,7 +1040,7 @@ function toast(msg){var el=document.getElementById('toast');el.innerHTML=msg;el.
 
 // == READ ALOUD ==
 // ══ GOOGLE CLOUD TTS ══
-var GCP_TTS_KEY='AIzaSyDyQj6B-lzhM3-KlX6oxRw76AJoDD_sxoU';
+var GCP_TTS_KEY=g('minos_gcp_tts')||'';
 var GCP_TTS_URL='https://texttospeech.googleapis.com/v1/text:synthesize?key='+GCP_TTS_KEY;
 var GCP_VOICE={languageCode:'en-US',name:'en-US-Neural2-D'};
 var ttsActive=false;
@@ -1133,6 +1136,8 @@ function playChunk(index){
 }
 
 function startReadAloud(){
+  GCP_TTS_KEY=g('minos_gcp_tts')||'';
+  if(!GCP_TTS_KEY){toast('Add your Google TTS key in Settings first');document.getElementById('settingsOv').classList.add('on');return;}
   var content=document.getElementById('readContent');
   if(!content||!content.textContent.trim()){toast('Nothing to read');return;}
   ttsFullText=stripForSpeech(content.innerHTML);
