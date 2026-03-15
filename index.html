@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MINOS — Light Assembly Bible Church</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -39,7 +39,7 @@
   --sh:0 2px 12px rgba(0,0,0,.08);--sh2:0 1px 4px rgba(0,0,0,.06);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden}html.setup-open,html.setup-open body{overflow:auto;height:auto;min-height:100%}
+html{height:100%}body{height:100%;overflow:hidden}
 body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
 
 /* ══ SETUP ══ */
@@ -320,6 +320,67 @@ body{font-family:'Source Serif 4',serif;background:var(--bg);color:var(--text);d
 .cb-info{color:var(--text2);flex:1}
 .cb-info strong{color:var(--black);font-weight:700}
 .cb-session{color:var(--text2);font-size:13px;margin-left:auto;font-weight:600}
+
+/* ══ SMALL SCREEN OPTIMISATION ══ */
+@media screen and (max-width:400px),(max-height:700px){
+  /* Header */
+  .hdr-inner{padding:10px 12px}
+  .hdr-logo{font-size:22px;letter-spacing:2px}
+  .hdr-church{font-size:10px}
+  .hdr-sep{height:24px}
+  .sync-txt{display:none}
+  .sync-pill{padding:5px 8px}
+  .hdr-btn{padding:6px 9px;font-size:16px}
+
+  /* Tabs */
+  .tab{padding:10px 0;font-size:12px;gap:4px}
+  .t-badge{font-size:10px;padding:2px 6px}
+
+  /* Quick bar */
+  .quick-bar{padding:8px 10px}
+  .q-btn{font-size:12px;padding:7px 12px}
+
+  /* Chat */
+  .msg-bubble{font-size:15px;line-height:1.7;padding:12px 14px}
+  .chat-inp{font-size:15px;padding:10px 12px}
+  .send-btn{width:40px;height:40px;font-size:18px}
+  .chat-bar{padding:8px 10px}
+  .msg-actions{gap:6px;padding:4px 0 8px}
+  .msg-act{font-size:12px;padding:5px 10px}
+
+  /* Library */
+  .lib-search-wrap{padding:10px}
+  .lib-search{font-size:15px;padding:10px 12px}
+  .cat-bar{padding:8px 10px}
+  .cat-btn{font-size:12px;padding:6px 10px}
+  .lib-grid{padding:10px;gap:10px}
+  .lib-card{padding:14px}
+  .lc-title{font-size:15px}
+  .lc-preview{font-size:13px}
+
+  /* Read view */
+  .read-hdr{padding:10px 12px;gap:8px}
+  .read-back{font-size:17px;padding:5px 10px}
+  .read-title{font-size:14px}
+  .read-aloud-btn{font-size:12px;padding:6px 10px}
+  .read-copy{font-size:12px;padding:6px 10px}
+  .read-content{padding:18px 14px 60px}
+  .md-read p{font-size:16px;line-height:1.8}
+  .md-read h1{font-size:22px}
+  .md-read h2{font-size:19px}
+  .md-read h3{font-size:17px}
+  .md-read li{font-size:15px}
+  .md-read td{font-size:14px;padding:8px 10px}
+
+  /* Settings sheet */
+  .sheet{padding:20px 16px 30px}
+  .sheet-title{font-size:19px}
+  .sheet-inp{font-size:15px;padding:11px 13px}
+  .sheet-save{padding:13px;font-size:15px}
+
+  /* Body text */
+  body{font-size:15px}
+}
 </style>
 </head>
 <body>
