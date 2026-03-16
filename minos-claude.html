@@ -538,14 +538,14 @@ var CATS={
 };
 var QUICK={
   morning:'Generate my Morning Brief for today',
-  study:'Deep Study:',
-  sunday:'Sunday Message:',
-  notes:'Sermon Notes:',
-  rebuild:'REBUILD Series -- generate the full Sunday Message for Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6',
-  whatsapp:'WhatsApp 7-Day Devotional Series:',
-  facebook:'Facebook Posts 7-Day Series:',
-  partner:'Partner Devotional:',
-  prayer:'Prayer Guide for:'
+  study:'Deep Study: ',
+  sunday:'Sunday Message: ',
+  notes:'Sermon Notes: ',
+  rebuild:'REBUILD Series: ',
+  whatsapp:'WhatsApp Devotional Series: ',
+  facebook:'Facebook Posts: ',
+  partner:'Partner Devotional: ',
+  prayer:'Prayer Guide: '
 };
 function buildSYS(){
   var now=new Date();
@@ -591,11 +591,24 @@ function buildSYS(){
     "",
     "INTELLIGENCE RULES:",
     "- You are a conversational ministry assistant, not just a content generator.",
-    "- When a request is vague, ask ONE focused clarifying question before generating.",
-    "- After generating content, suggest a logical next step.",
-    "- Remember what was discussed earlier in this conversation and reference it naturally.",
+    "- ALWAYS ask clarifying questions BEFORE generating any content. Never generate without asking first unless the request already has full detail.",
+    "- Ask ALL your questions at once in a single message. Never ask one question then wait then ask another.",
+    "- Format your questions as NUMBERED questions with LETTERED options. Example:",
+    "  1. Which week of the REBUILD series?",
+    "     A. Week 1 -- The Potter -- Jeremiah 18:1-6",
+    "     B. Week 2 -- Dry Bones -- Ezekiel 37:1-10",
+    "     C. Week 3 -- Foundation -- Matthew 7:24-27",
+    "     D. Week 4 -- Fully Alive -- John 10:10",
+    "  2. Message length?",
+    "     A. Full -- 45-60 minutes",
+    "     B. Medium -- 30 minutes",
+    "     C. Short -- 20 minutes",
+    "- The person replies with just numbers and letters like: 1A, 2B -- then you generate.",
+    "- Questions must be rich, focused, and relevant to the specific content type requested.",
+    "- After generating content, suggest a logical next step with a numbered option.",
+    "- Remember context from earlier in the conversation and reference it naturally.",
     "- Never produce generic content. Every output must feel written specifically for Light Assembly, Ikot Ambon, and Rev. Emmanuel Udoh.",
-    "- Recommend things Pastor may not have thought to ask for. Be proactive.",
+    "- If someone replies with just numbers like 1A 2B -- understand those as answers to your previous questions and generate immediately.",
     "",
     "=====================================",
     "SUNDAY MESSAGE FORMAT",
@@ -1335,20 +1348,28 @@ document.getElementById('contextOv').addEventListener('click',function(e){
   if(e.target===this){this.style.display='none';pendingCtx=null;}
 });
 
-// == UPDATE QUICK BUTTONS TO USE CONTEXT POPUP ==
+// == QUICK BUTTONS -- DROP INTO CHAT BOX ==
 document.querySelectorAll('.qbtn').forEach(function(btn){
-  btn.removeEventListener('click',btn._handler);
-  btn._handler=function(){
+  btn.addEventListener('click',function(){
     var q=btn.dataset.q;
-    var ctxTypes=['facebook','whatsapp','sunday','notes','partner','prayer'];
-    if(ctxTypes.indexOf(q)>-1){
-      openCtx(q);
+    var prompt=QUICK[q]||'';
+    if(!prompt)return;
+    var inp=document.getElementById('chatInp');
+    // Buttons that need topic input -- drop into box with cursor ready
+    var needTopic=['facebook','whatsapp','sunday','notes','partner','prayer','study','rebuild'];
+    if(needTopic.indexOf(q)>-1){
+      inp.value=prompt;
+      inp.style.height='auto';
+      inp.style.height=Math.min(inp.scrollHeight,120)+'px';
+      inp.focus();
+      // Place cursor at end
+      inp.setSelectionRange(inp.value.length,inp.value.length);
     } else {
-      var prompt=QUICK[q]||'';
-      if(prompt){document.getElementById('chatInp').value=prompt;sendMessage();}
+      // Morning Brief -- send immediately
+      inp.value=prompt;
+      sendMessage();
     }
-  };
-  btn.addEventListener('click',btn._handler);
+  });
 });
 
 // == DAILY RECOMMENDATION CARD ==
