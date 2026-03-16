@@ -323,26 +323,25 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
       <div class="quick-bar">
         <div class="quick-row">
           <button class="qbtn" data-q="morning">&#9728; Morning Brief</button>
-          <button class="qbtn" data-q="study">&#128270; Deep Study</button>
+          <button class="qbtn" data-q="study">&#128269; Deep Study</button>
           <button class="qbtn" data-q="sunday">&#9962; Sunday Message</button>
           <button class="qbtn" data-q="notes">&#128221; Sermon Notes</button>
           <button class="qbtn" data-q="rebuild">&#127963; REBUILD Series</button>
-          <button class="qbtn" data-q="greek">&#9001; Greek Word Study</button>
-          <button class="qbtn" data-q="hebrew">&#9001; Hebrew Word Study</button>
-          <button class="qbtn" data-q="background">&#128218; Historical Background</button>
-          <button class="qbtn" data-q="scholars">&#127891; Scholars Analysis</button>
-          <button class="qbtn" data-q="theology">&#9904; Theological Framework</button>
           <button class="qbtn" data-q="whatsapp">&#128241; WhatsApp 7-Day</button>
           <button class="qbtn" data-q="facebook">&#128196; Facebook Posts</button>
           <button class="qbtn" data-q="partner">&#129309; Partner Devotional</button>
           <button class="qbtn" data-q="prayer">&#128591; Prayer Guide</button>
+          <button class="qbtn" data-q="greek">&#9001; Greek Study</button>
+          <button class="qbtn" data-q="hebrew">&#9001; Hebrew Study</button>
+          <button class="qbtn" data-q="scholars">&#127891; Scholars</button>
+          <button class="qbtn" data-q="theology">&#9904; Theology</button>
         </div>
       </div>
       <div class="chat-msgs" id="chatMsgs">
         <div style="text-align:center;padding:40px 20px;color:var(--text3)">
           <div style="font-size:40px;margin-bottom:12px">&#128172;</div>
           <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:8px">Good day, Pastor Emmanuel</div>
-          <div style="font-size:14px;line-height:1.7">Ask MINOS DeepSeek anything. Best for Deep Study, Greek and Hebrew, scholarly research.</div>
+          <div style="font-size:14px;line-height:1.7">Ask MINOS anything or tap a quick button above to get started.</div>
         </div>
       </div>
       <div class="chat-bar">
@@ -475,11 +474,49 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
   <button class="ib-btn" id="installDismiss">Got It</button>
 </div>
 
+<!-- SMART CONTEXT POPUP -->
+<div id="contextOv" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:850;display:none;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:24px 20px 44px">
+    <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 18px"></div>
+    <div id="ctxTitle" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#000;margin-bottom:16px"></div>
+    <div id="ctxFields"></div>
+    <button id="ctxGo" style="width:100%;background:#1e3a8a;color:#fff;border:none;border-radius:12px;padding:16px;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;cursor:pointer;margin-top:16px">Generate &#9658;</button>
+    <button id="ctxCancel" style="width:100%;background:none;border:none;color:#475569;font-size:14px;cursor:pointer;margin-top:10px;padding:6px">Cancel</button>
+  </div>
+</div>
+
+<!-- DAILY RECOMMENDATION CARD -->
+<div id="recCard" style="display:none;background:linear-gradient(135deg,#1e3a8a,#1a4fa8);border-radius:14px;margin:12px 14px 0;padding:16px 18px;cursor:pointer;position:relative">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px">Today's Recommendation</div>
+  <div id="recText" style="font-size:15px;color:#fff;line-height:1.6;font-weight:600"></div>
+  <div id="recAction" style="margin-top:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:7px 14px;font-size:13px;color:#fff;font-weight:700;display:inline-block"></div>
+  <button id="recDismiss" style="position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;line-height:1">&#10005;</button>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<!-- SMART CONTEXT POPUP -->
+<div id="contextOv" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:850;display:none;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:24px 20px 44px">
+    <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 18px"></div>
+    <div id="ctxTitle" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#000;margin-bottom:16px"></div>
+    <div id="ctxFields"></div>
+    <button id="ctxGo" style="width:100%;background:#1e3a8a;color:#fff;border:none;border-radius:12px;padding:16px;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;cursor:pointer;margin-top:16px">Generate &#9658;</button>
+    <button id="ctxCancel" style="width:100%;background:none;border:none;color:#475569;font-size:14px;cursor:pointer;margin-top:10px;padding:6px">Cancel</button>
+  </div>
+</div>
+
+<!-- DAILY RECOMMENDATION CARD -->
+<div id="recCard" style="display:none;background:linear-gradient(135deg,#1e3a8a,#1a4fa8);border-radius:14px;margin:12px 14px 0;padding:16px 18px;cursor:pointer;position:relative">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px">Today's Recommendation</div>
+  <div id="recText" style="font-size:15px;color:#fff;line-height:1.6;font-weight:600"></div>
+  <div id="recAction" style="margin-top:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:7px 14px;font-size:13px;color:#fff;font-weight:700;display:inline-block"></div>
+  <button id="recDismiss" style="position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;line-height:1">&#10005;</button>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
 
-// ══ CONFIG ══
+// == CONFIG ==
 var FBC={
   apiKey:'AIzaSyBahFRyVWBjc0yHIQlaKCFvYwcUZjIpuGA',
   authDomain:'minos-dashboard.firebaseapp.com',
@@ -489,10 +526,10 @@ var FBC={
   messagingSenderId:'847823517233',
   appId:'1:847823517233:web:d9eb5237172856a4870710'
 };
-var ANTHRO_URL='https://api.anthropic.com/v1/messages';
-var SONNET='claude-sonnet-4-20250514';
-var HAIKU='claude-haiku-4-5-20251001';
-var COST={sonnet:{in:3,out:15},haiku:{in:0.8,out:4}};
+var DS_URL='https://api.deepseek.com/chat/completions';
+var DS_MODEL='deepseek-chat';
+
+var COST={deepseek:{in:0.14,out:0.28}};
 var CATS={
   sermon:{label:'Sermon',tag:'sermon',stripe:'sermon-s'},
   notes:{label:'Pulpit Notes',tag:'notes',stripe:'notes-s'},
@@ -505,68 +542,129 @@ var CATS={
 };
 var QUICK={
   morning:'Generate my Morning Brief for today',
-  study:'Deep Study -- all 7 scholarly layers:',
-  sunday:'Sunday Message:',
-  notes:'Sermon Notes:',
-  rebuild:'REBUILD Series -- generate the full Sunday Message for Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6',
-  greek:'Greek Word Study -- give me the full Greek analysis of the word:',
-  hebrew:'Hebrew Word Study -- give me the full Hebrew analysis of the word:',
-  background:'Historical and Cultural Background for the text:',
-  scholars:'Scholars Analysis -- what do major Bible scholars say about:',
-  theology:'Theological Framework and cross-references for:',
-  whatsapp:'WhatsApp 7-Day Devotional Series:',
-  facebook:'Facebook Posts 7-Day Series:',
-  partner:'Partner Devotional:',
-  prayer:'Prayer Guide for:'
+  study:'Deep Study: ',
+  sunday:'Sunday Message: ',
+  notes:'Sermon Notes: ',
+  rebuild:'REBUILD Series: ',
+  whatsapp:'WhatsApp Devotional Series: ',
+  facebook:'Facebook Posts: ',
+  partner:'Partner Devotional: ',
+  prayer:'Prayer Guide: ',
+  greek:'Greek Word Study: ',
+  hebrew:'Hebrew Word Study: ',
+  scholars:'Scholars Analysis: ',
+  theology:'Theological Framework: '
 };
-var SYS=`You are MINOS -- Ministry Intelligence & Operational System -- serving Rev. Emmanuel Udoh, senior pastor of Light Assembly Bible Church, Ikot Ambon, Akwa Ibom State, Nigeria.
+function buildSYS(){
+  var now=new Date();
+  var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var day=days[now.getDay()];
+  var date=now.getDate();
+  var month=months[now.getMonth()];
+  var year=now.getFullYear();
+  var hour=now.getHours();
+  var tod=hour<12?"Morning":hour<17?"Afternoon":"Evening";
+  var today=day+", "+date+" "+month+" "+year;
+  var schedules={"Sunday":"Sunday -- Workers Class 7am then Main Service.","Monday":"Monday -- Rest and reflection day.","Tuesday":"Tuesday -- Midweek preparation begins.","Wednesday":"Wednesday -- Prayer Meeting tonight.","Thursday":"Thursday -- Midweek Word and Communion tonight.","Friday":"Friday -- Prayer Meeting tonight.","Saturday":"Saturday -- Community Outreach day."};
+  var todaynote=schedules[day]||"";
+  var lines=[
+    "You are MINOS -- Ministry Intelligence & Operational System -- serving Rev. Emmanuel Udoh, senior pastor of Light Assembly Bible Church, Ikot Ambon, Akwa Ibom State, Nigeria.",
+    "",
+    "TODAY: "+today,
+    "TIME OF DAY: Good "+tod,
+    "SCHEDULE NOTE: "+todaynote,
+    "",
+    "CHURCH: Light Assembly Bible Church, Ikot Ambon, Akwa Ibom, Nigeria",
+    "PASTOR: Rev. Emmanuel Udoh -- 35 years experience, Pentecostal, apostolic, prophetic",
+    "CONGREGATION: approximately 20 members, goal 40. 40% youth 15-35, rural/urban, Ibibio culture",
+    "SCHEDULE: Sunday 7am Workers Class then Main Service | Wednesday Prayer Meeting | Thursday Midweek Word and Communion | Friday Prayer Meeting | Saturday Community Outreach | Monthly Tarry Night",
+    "",
+    "VOICE: Always speak DIRECTLY to Pastor -- Pastor, you... Never about him. Rich, anointed, weighty. Never shallow or generic.",
+    "GREETING: Always use Good "+tod+" when greeting. Never use Good Day.",
+    "PARTNERS: Covenant partners not donors. Rich, professional, weighty, honoring. Never begging.",
+    "INSPIRATIONS (principles only, never copy): Oyedepo, Adeboye, Uma Ukpai, Johnson Suleman, Arome Osaghae, Paul Enenche, Benson Idahosa, Olusola Areogun",
+    "",
+    "IBIBIO PHRASES (weave naturally):",
+    "Ami ikwo Abasi = I call upon God",
+    "Ami ikwo Abasi Mfon = I call upon the Spirit of God",
+    "Ufan Abasi = grace of God",
+    "Abasi owo = God reigns",
+    "",
+    "CURRENT SERIES: REBUILD -- What God Does With Broken Things",
+    "Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6",
+    "Week 2: Dry Bones Can Dance -- Ezekiel 37:1-10",
+    "Week 3: Build On The Right Foundation -- Matthew 7:24-27",
+    "Week 4: Fully Alive -- John 10:10",
+    "",
+    "INTELLIGENCE RULES:",
+    "- You are a conversational ministry assistant, not just a content generator.",
+    "- ALWAYS ask clarifying questions BEFORE generating any content. Never generate without asking first unless the request already has full detail.",
+    "- Ask ALL your questions at once in a single message. Never ask one question then wait then ask another.",
+    "- Format your questions as NUMBERED questions with LETTERED options. Example:",
+    "  1. Which week of the REBUILD series?",
+    "     A. Week 1 -- The Potter -- Jeremiah 18:1-6",
+    "     B. Week 2 -- Dry Bones -- Ezekiel 37:1-10",
+    "     C. Week 3 -- Foundation -- Matthew 7:24-27",
+    "     D. Week 4 -- Fully Alive -- John 10:10",
+    "  2. Message length?",
+    "     A. Full -- 45-60 minutes",
+    "     B. Medium -- 30 minutes",
+    "     C. Short -- 20 minutes",
+    "- The person replies with just numbers and letters like: 1A, 2B -- then you generate.",
+    "- Questions must be rich, focused, and relevant to the specific content type requested.",
+    "- After generating content, suggest a logical next step with a numbered option.",
+    "- Remember context from earlier in the conversation and reference it naturally.",
+    "- Never produce generic content. Every output must feel written specifically for Light Assembly, Ikot Ambon, and Rev. Emmanuel Udoh.",
+    "- If someone replies with just numbers like 1A 2B -- understand those as answers to your previous questions and generate immediately.",
+    "",
+    "=====================================",
+    "SUNDAY MESSAGE FORMAT",
+    "=====================================",
+    "Complete step-by-step preaching guide. Title, Texts, One Truth. OPEN with hook. BODY 3-5 sections each with: KEY POINT bold one sentence, BACKUP SCRIPTURE quoted in full, EXPLANATION 3-5 paragraphs as Pastor would say it, [lightning] WORD STUDY, [book] ILLUSTRATION, [theater] DEMONSTRATION, [fire] IBIBIO MOMENT. 5-DAY APPLICATION TABLE. CLOSE with altar call naming two groups specifically, closing prayer in full. POWER POINTS.",
+    "",
+    "=====================================",
+    "SERMON NOTES FORMAT",
+    "=====================================",
+    "Compressed faithful mirror. Every section: heading, KEY POINT one bold sentence, Backup Scripture, Explanation 2-3 punchy lines. Markers: [book] ILLUSTRATION, [theater] DEMONSTRATION, [lightning] WORD STUDY, [fire] IBIBIO MOMENT. 5-day table, altar call two groups, closing prayer, POWER POINTS.",
+    "",
+    "=====================================",
+    "FACEBOOK POSTS FORMAT",
+    "=====================================",
+    "Exactly the number requested. Each post: max 150 words, ONE LINE hook opening, one biblical truth, real or biblical story, one application, engaging question or call to comment. No hashtags unless asked. End with: Light Assembly Bible Church | Ikot Ambon.",
+    "",
+    "=====================================",
+    "WHATSAPP DEVOTIONAL FORMAT",
+    "=====================================",
+    "Each day: day number and title, ONE anchor scripture quoted in full, truth statement one paragraph, brief illustration 3-4 lines, action point, declaration to speak aloud. Under 200 words per day.",
+    "",
+    "=====================================",
+    "PARTNER DEVOTIONAL FORMAT",
+    "=====================================",
+    "Rich, weighty, prophetic. Scripture quoted in full, Revelation 2-3 deep paragraphs, A Word For The Partner personal and honoring, Declaration 4-5 lines, Activation one specific action. These are covenant partners not donors.",
+    "",
+    "=====================================",
+    "MORNING BRIEF FORMAT",
+    "=====================================",
+    "Scripture for "+today+", Word for the Shepherd personal feeding for Pastor, Church status and what is happening TODAY based on the schedule note above, Preaching growth challenge, Cultural awareness for Akwa Ibom, Declaration for the day.",
+    "",
+    "=====================================",
+    "DEEP STUDY FORMAT",
+    "=====================================",
+    "Private scholarly study 7 complete layers never cut short: 1. Anchor Texts quoted in full. 2. Greek/Hebrew Word Studies. 3. Historical and Cultural Background. 4. Scholarly Voices minimum 6 named scholars. 5. Theological Framework. 6. Local Illustrations Ikot Ambon and Akwa Ibom. 7. Pastoral Application for Light Assembly.",
+    "",
+    "=====================================",
+    "PRAYER GUIDE FORMAT",
+    "=====================================",
+    "Structured agenda: Opening worship direction, Themed prayer sections with supporting scriptures, Declaration points, Closing prayer in full.",
+    "",
+    "Be complete. Be excellent. Never cut short. Use full markdown formatting throughout every response."
+  ];
+  return lines.join("\n");
+}
+var SYS="";
 
-CHURCH: Light Assembly Bible Church, Ikot Ambon, Akwa Ibom, Nigeria
-PASTOR: Rev. Emmanuel Udoh -- 35 years experience, Pentecostal, apostolic, prophetic
-CONGREGATION: approximately 20 members, goal 40. 40% youth 15-35, rural/urban, Ibibio culture
-SCHEDULE: Sunday 7am Workers Class then Main Service | Wednesday Prayer Meeting | Thursday Midweek Word and Communion | Friday Prayer Meeting | Saturday Community Outreach | Monthly Tarry Night
-
-VOICE: Always speak DIRECTLY to Pastor -- "Pastor, you..." Never about him. Rich, anointed, weighty. Never shallow or generic.
-PARTNERS: Covenant partners not donors. Rich, professional, weighty, honoring. Never begging.
-INSPIRATIONS (principles only, never copy): Oyedepo, Adeboye, Uma Ukpai, Johnson Suleman, Arome Osaghae, Paul Enenche, Benson Idahosa, Olusola Areogun
-
-IBIBIO PHRASES:
-Ami ikwo Abasi = I call upon God
-Ami ikwo Abasi Mfon = I call upon the Spirit of God
-Ufan Abasi = grace of God
-Abasi owo = God reigns
-
-CURRENT SERIES: REBUILD -- What God Does With Broken Things
-Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6
-Week 2: Dry Bones Can Dance -- Ezekiel 37:1-10
-Week 3: Build On The Right Foundation -- Matthew 7:24-27
-Week 4: Fully Alive -- John 10:10
-
-SUNDAY MESSAGE FORMAT:
-Complete step-by-step preaching guide. Title, Texts, One Truth. OPEN with hook. BODY 3-5 sections each with: KEY POINT bold one sentence, BACKUP SCRIPTURE quoted in full, EXPLANATION 3-5 paragraphs as Pastor would say it, [lightning] WORD STUDY where relevant, [book] ILLUSTRATION, [theater] DEMONSTRATION, [fire] IBIBIO MOMENT. Then 5-DAY APPLICATION TABLE. Then CLOSE with altar call naming two groups specifically, closing prayer in full. Then POWER POINTS bullet list.
-
-SERMON NOTES FORMAT:
-Compressed faithful mirror. Every section: heading, KEY POINT one bold sentence, Backup Scripture quote, Explanation 2-3 punchy lines. Markers: [book] ILLUSTRATION story + trigger, [theater] DEMONSTRATION props + action, [lightning] WORD STUDY word + meaning + application, [fire] IBIBIO MOMENT phrase + speak slowly. 5-day table, altar call, closing prayer, POWER POINTS.
-
-DEEP STUDY FORMAT:
-Private scholarly study 7 layers never cut short:
-1. Anchor Texts quoted in full
-2. Greek/Hebrew Word Studies
-3. Historical and Cultural Background
-4. Scholarly Voices -- minimum 6 named scholars
-5. Theological Framework
-6. Local Illustrations -- Ikot Ambon and Akwa Ibom
-7. Pastoral Application for Light Assembly
-
-WHATSAPP: 7-day series. Scripture, truth, illustration, action, declaration. Short punchy powerful.
-FACEBOOK: 7 story-style posts. Real stories only. Hook, truth, application, engage.
-PARTNER DEVOTIONAL: Rich weighty prophetic. Scripture revelation declaration activation.
-MORNING BRIEF: Scripture, church status, preaching challenge, cultural awareness, declaration.
-PRAYER GUIDE: Worship direction, prayer sections, scriptures, declarations, closing prayer.
-
-Be complete. Be excellent. Never cut short. Use full markdown formatting.`;
-
-// ══ STATE ══
+// == STATE ==
 var db=null;
 var items={};
 var activeCat='all';
@@ -580,13 +678,13 @@ var generating=false;
 var sessionCostTotal=0;
 var lastCost=0;
 
-// ══ STORAGE ══
+// == STORAGE ==
 function ls(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}}
 function lss(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function getKey(){return ls('minos_ds_ak');}
 function getGcp(){return ls('minos_gcp');}
 
-// ══ TOAST ══
+// == TOAST ==
 var toastTimer=null;
 function toast(msg){
   var el=document.getElementById('toast');
@@ -595,14 +693,14 @@ function toast(msg){
   toastTimer=setTimeout(function(){el.classList.remove('on');},2800);
 }
 
-// ══ TIME ══
+// == TIME ==
 function ftime(){
   var d=new Date();
   var h=d.getHours(),m=d.getMinutes();
   return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
 }
 
-// ══ LAUNCH ══
+// == LAUNCH ==
 document.getElementById('launchBtn').addEventListener('click',function(){
   var key=document.getElementById('apiKeyInput').value.trim();
   if(!key||key.length<20){
@@ -624,14 +722,14 @@ function launch(){
   },1200);
 }
 
-// ══ AUTO LAUNCH IF KEY EXISTS ══
+// == AUTO LAUNCH IF KEY EXISTS ==
 window.addEventListener('load',function(){
   if(getKey()&&getKey().length>20){
     launch();
   }
 });
 
-// ══ FIREBASE ══
+// == FIREBASE ==
 function initFirebase(){
   try{
     if(!firebase.apps.length)firebase.initializeApp(FBC);
@@ -660,15 +758,15 @@ function setSyncStatus(st){
 function dbSave(item){
   if(!db)return;
   setSyncStatus('busy');
-  db.ref('deepseek-library/'+item.id).set(item).then(function(){setSyncStatus('live');}).catch(function(){setSyncStatus('off');toast('Sync error');});
+  db.ref('claude-library/'+item.id).set(item).then(function(){setSyncStatus('live');}).catch(function(){setSyncStatus('off');toast('Sync error');});
 }
 
 function dbDel(id){
   if(!db)return;
-  db.ref('deepseek-library/'+id).remove();
+  db.ref('claude-library/'+id).remove();
 }
 
-// ══ TABS ══
+// == TABS ==
 document.querySelectorAll('.tab').forEach(function(tab){
   tab.addEventListener('click',function(){
     var t=this.dataset.tab;
@@ -679,7 +777,7 @@ document.querySelectorAll('.tab').forEach(function(tab){
   });
 });
 
-// ══ QUICK BUTTONS ══
+// == QUICK BUTTONS ==
 document.querySelectorAll('.qbtn').forEach(function(btn){
   btn.addEventListener('click',function(){
     var q=QUICK[this.dataset.q]||'';
@@ -690,7 +788,7 @@ document.querySelectorAll('.qbtn').forEach(function(btn){
   });
 });
 
-// ══ CHAT ══
+// == CHAT ==
 function pickModel(text){return 'deepseek-chat';}
 
 function addMsg(role,content){
@@ -738,7 +836,7 @@ function sendMessage(){
   document.getElementById('sendBtn').disabled=true;
   showTyping();
   var model=pickModel(text);
-  var dsMessages=[{role:'system',content:SYS}].concat(chatHistory.slice(-10));
+var dsMessages=[{role:'system',content:SYS}].concat(chatHistory.slice(-10));
   fetch('https://api.deepseek.com/chat/completions',{
     method:'POST',
     headers:{
@@ -780,7 +878,7 @@ document.getElementById('chatInp').addEventListener('input',function(){
   this.style.height=Math.min(this.scrollHeight,120)+'px';
 });
 
-// ══ LIBRARY ══
+// == LIBRARY ==
 function updateBadges(){
   var arr=Object.values(items);
   var n=arr.length;
@@ -844,7 +942,7 @@ document.getElementById('libClr').addEventListener('click',function(){
   this.classList.remove('on');renderLib();
 });
 
-// ══ READ VIEW ══
+// == READ VIEW ==
 function openRead(id){
   var item=items[id];if(!item)return;
   readId=id;
@@ -870,7 +968,7 @@ document.getElementById('readShareBtn').addEventListener('click',function(){
   var item=items[readId];if(item)shareText(item.content);
 });
 
-// ══ SAVE MODAL ══
+// == SAVE MODAL ==
 function openSaveModal(content){
   saveContent=content;
   var title=content.replace(/[#*_]/g,'').split('\n')[0].slice(0,60).trim();
@@ -901,7 +999,7 @@ document.getElementById('saveConfirmBtn').addEventListener('click',function(){
   toast('Saved to Library');
 });
 
-// ══ CONFIRM DELETE ══
+// == CONFIRM DELETE ==
 document.getElementById('confirmDel').addEventListener('click',function(){
   if(deleteId){dbDel(deleteId);toast('Deleted');}
   document.getElementById('confirmOv').classList.remove('on');deleteId=null;
@@ -910,7 +1008,7 @@ document.getElementById('confirmKeep').addEventListener('click',function(){
   document.getElementById('confirmOv').classList.remove('on');deleteId=null;
 });
 
-// ══ COPY & SHARE ══
+// == COPY & SHARE ==
 function stripMD(text){
   return (text||'').replace(/#{1,6}\s/g,'').replace(/\*{1,3}/g,'').replace(/__/g,'').replace(/_/g,'').replace(/\|/g,' ').replace(/\n{3,}/g,'\n\n').trim();
 }
@@ -948,7 +1046,7 @@ function saveFile(text,title){
   toast('Saved as '+fname);
 }
 
-// ══ SETTINGS ══
+// == SETTINGS ==
 document.getElementById('settingsBtn').addEventListener('click',function(){
   document.getElementById('settingsKey').value=getKey();
   document.getElementById('settingsGcp').value=getGcp();
@@ -970,7 +1068,7 @@ document.getElementById('settingsSave').addEventListener('click',function(){
   setTimeout(function(){location.reload();},1200);
 });
 
-// ══ GOOGLE CLOUD TTS ══
+// == GOOGLE CLOUD TTS ==
 var ttsAudio=null;
 var ttsChunks=[];
 var ttsChunkIdx=0;
@@ -1070,7 +1168,7 @@ document.getElementById('readPauseBtn').addEventListener('click',function(){
 
 document.getElementById('readStopBtn').addEventListener('click',function(){stopAudio();toast('Stopped');});
 
-// ══ MARKDOWN ══
+// == MARKDOWN ==
 function parseMD(md){
   if(!md)return '';
   var lines=md.split('\n'),html='',inUL=false,inOL=false,inTbl=false,trows=[];
@@ -1119,9 +1217,9 @@ function parseMD(md){
   return html;
 }
 
-// ══ INSTALL BANNER ══
+// == INSTALL BANNER ==
 setTimeout(function(){
-  if(ls('minos_installed'))return;
+  if(ls('minos_ds_installed'))return;
   var ua=navigator.userAgent||'';
   var banner=document.getElementById('installBanner');
   var txt=document.getElementById('installTxt');
@@ -1135,8 +1233,191 @@ setTimeout(function(){
 },3000);
 document.getElementById('installDismiss').addEventListener('click',function(){
   document.getElementById('installBanner').classList.remove('on');
-  lss('minos_installed','1');
+  lss('minos_ds_installed','1');
 });
+
+// == SMART CONTEXT POPUPS ==
+var CTX_CONFIG={
+  facebook:{
+    title:'Facebook Posts',
+    fields:[
+      {id:'ctx_topic',label:'Topic or Scripture',placeholder:'e.g. Faith, John 3:16, Healing...'},
+      {id:'ctx_count',label:'How many posts?',type:'select',options:['3 posts','5 posts','7 posts']},
+      {id:'ctx_style',label:'Style',type:'select',options:['Story-based','Teaching','Motivational','Evangelistic']}
+    ],
+    build:function(v){return 'Generate '+v.ctx_count+' Facebook posts for Light Assembly Bible Church. Topic: '+v.ctx_topic+'. Style: '+v.ctx_style+'. Follow the Facebook Posts format exactly -- hook opening, biblical truth, real story, application, engaging question. End each post with Light Assembly Bible Church | Ikot Ambon.';}
+  },
+  whatsapp:{
+    title:'WhatsApp Devotional',
+    fields:[
+      {id:'ctx_topic',label:'Series theme or scripture',placeholder:'e.g. Prayer, Isaiah 40, Healing...'},
+      {id:'ctx_days',label:'How many days?',type:'select',options:['3 days','5 days','7 days']},
+      {id:'ctx_audience',label:'Who is this for?',type:'select',options:['Full congregation','Youth only','Partners only','Women']}
+    ],
+    build:function(v){return 'Generate a '+v.ctx_days+' WhatsApp devotional series for Light Assembly Bible Church. Theme: '+v.ctx_topic+'. Audience: '+v.ctx_audience+'. Follow the WhatsApp Devotional format exactly -- under 200 words per day, scripture, truth, illustration, action, declaration.';}
+  },
+  sunday:{
+    title:'Sunday Message',
+    fields:[
+      {id:'ctx_title',label:'Sermon title or topic',placeholder:'e.g. The Potter and the Clay, Faith that moves mountains...'},
+      {id:'ctx_text',label:'Scripture text',placeholder:'e.g. Jeremiah 18:1-6'},
+      {id:'ctx_type',label:'Type',type:'select',options:['REBUILD Series','Standalone message','Special Sunday']}
+    ],
+    build:function(v){return 'Generate a complete Sunday Message. Title/Topic: '+v.ctx_title+'. Text: '+v.ctx_text+'. Type: '+v.ctx_type+'. Follow the Sunday Message format exactly -- full step-by-step preaching guide with Key Points, Backup Scriptures, Explanations, Word Studies, Illustrations, Demonstrations, Ibibio Moments, 5-Day Table, Altar Call, Power Points.';}
+  },
+  notes:{
+    title:'Sermon Notes',
+    fields:[
+      {id:'ctx_title',label:'Which sermon are these notes for?',placeholder:'e.g. The Potter and the Clay, or paste the title...'},
+      {id:'ctx_text',label:'Scripture text',placeholder:'e.g. Jeremiah 18:1-6'}
+    ],
+    build:function(v){return 'Generate Sermon Notes for: '+v.ctx_title+'. Scripture: '+v.ctx_text+'. Follow the Sermon Notes format exactly -- compressed faithful mirror, Key Points, Backup Scriptures, 2-3 punchy lines per section, all markers, 5-day table, altar call two groups, closing prayer, Power Points.';}
+  },
+  partner:{
+    title:'Partner Devotional',
+    fields:[
+      {id:'ctx_topic',label:'Theme or scripture',placeholder:'e.g. Covenant faithfulness, Psalm 37...'},
+      {id:'ctx_tone',label:'Tone',type:'select',options:['Prophetic and weighty','Encouraging and warm','Teaching and deep']}
+    ],
+    build:function(v){return 'Generate a Partner Devotional. Theme: '+v.ctx_topic+'. Tone: '+v.ctx_tone+'. Follow the Partner Devotional format exactly -- rich, weighty, prophetic. Scripture quoted in full, revelation, word for the partner, declaration, activation. These are covenant partners not donors.';}
+  },
+  prayer:{
+    title:'Prayer Guide',
+    fields:[
+      {id:'ctx_theme',label:'Prayer theme or focus',placeholder:'e.g. Healing, Church growth, REBUILD series...'},
+      {id:'ctx_service',label:'Which service?',type:'select',options:['Sunday','Wednesday Prayer Meeting','Thursday Midweek','Friday Prayer','Tarry Night','Personal prayer']}
+    ],
+    build:function(v){return 'Generate a Prayer Guide for: '+v.ctx_service+'. Theme: '+v.ctx_theme+'. Follow the Prayer Guide format exactly -- opening worship direction, themed prayer sections with scriptures, declaration points, closing prayer in full.';}
+  }
+};
+
+var pendingCtx=null;
+
+function openCtx(type){
+  var cfg=CTX_CONFIG[type];
+  if(!cfg)return;
+  pendingCtx=cfg;
+  document.getElementById('ctxTitle').textContent=cfg.title;
+  var fieldsDiv=document.getElementById('ctxFields');
+  fieldsDiv.innerHTML='';
+  cfg.fields.forEach(function(f){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='margin-bottom:14px';
+    var lbl=document.createElement('label');
+    lbl.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#1e3a8a;margin-bottom:6px';
+    lbl.textContent=f.label;
+    wrap.appendChild(lbl);
+    if(f.type==='select'){
+      var sel=document.createElement('select');
+      sel.id=f.id;
+      sel.style.cssText='width:100%;background:#f5f7fa;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-family:Source Serif 4,serif;font-size:15px;color:#000;outline:none;-webkit-appearance:none';
+      f.options.forEach(function(o){var opt=document.createElement('option');opt.value=o;opt.textContent=o;sel.appendChild(opt);});
+      wrap.appendChild(sel);
+    } else {
+      var inp=document.createElement('input');
+      inp.id=f.id;inp.type='text';inp.placeholder=f.placeholder||'';
+      inp.style.cssText='width:100%;background:#f5f7fa;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-family:Source Serif 4,serif;font-size:15px;color:#000;outline:none;-webkit-appearance:none';
+      wrap.appendChild(inp);
+    }
+    fieldsDiv.appendChild(wrap);
+  });
+  document.getElementById('contextOv').style.display='flex';
+  setTimeout(function(){if(cfg.fields[0]){var first=document.getElementById(cfg.fields[0].id);if(first&&first.focus)first.focus();}},300);
+}
+
+document.getElementById('ctxGo').addEventListener('click',function(){
+  if(!pendingCtx)return;
+  var vals={};
+  var ok=true;
+  pendingCtx.fields.forEach(function(f){
+    var el=document.getElementById(f.id);
+    vals[f.id]=el?el.value.trim():'';
+    if(!vals[f.id]&&f.type!=='select'){ok=false;el.style.borderColor='#dc2626';}
+  });
+  if(!ok){toast('Please fill in all fields');return;}
+  document.getElementById('contextOv').style.display='none';
+  var prompt=pendingCtx.build(vals);
+  document.getElementById('chatInp').value=prompt;
+  sendMessage();
+  pendingCtx=null;
+});
+
+document.getElementById('ctxCancel').addEventListener('click',function(){
+  document.getElementById('contextOv').style.display='none';pendingCtx=null;
+});
+document.getElementById('contextOv').addEventListener('click',function(e){
+  if(e.target===this){this.style.display='none';pendingCtx=null;}
+});
+
+// == QUICK BUTTONS -- DROP INTO CHAT BOX ==
+document.querySelectorAll('.qbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var q=btn.dataset.q;
+    var prompt=QUICK[q]||'';
+    if(!prompt)return;
+    var inp=document.getElementById('chatInp');
+    // Buttons that need topic input -- drop into box with cursor ready
+    var needTopic=['facebook','whatsapp','sunday','notes','partner','prayer','study','rebuild'];
+    if(needTopic.indexOf(q)>-1){
+      inp.value=prompt;
+      inp.style.height='auto';
+      inp.style.height=Math.min(inp.scrollHeight,120)+'px';
+      inp.focus();
+      // Place cursor at end
+      inp.setSelectionRange(inp.value.length,inp.value.length);
+    } else {
+      // Morning Brief -- send immediately
+      inp.value=prompt;
+      sendMessage();
+    }
+  });
+});
+
+// == DAILY RECOMMENDATION CARD ==
+function showRecommendation(){
+  var today=new Date().toDateString();
+  var lastShown=ls('minos_ds_rec_date');
+  if(lastShown===today)return;
+  var now=new Date();
+  var day=now.getDay();
+  var hour=now.getHours();
+  var recs={
+    0:{text:'It is Sunday. Workers Class starts at 7am and Main Service follows.',action:'Generate Workers Class Notes',prompt:'Generate Workers Class notes for today -- topic: The Need For Workers Commitment'},
+    1:{text:'It is Monday -- good day to review yesterday and plan the week ahead.',action:'Generate Week Plan',prompt:'Help me plan the ministry week ahead for Light Assembly Bible Church'},
+    2:{text:'It is Tuesday -- midweek preparation begins. What will you preach on Thursday?',action:'Generate Midweek Outline',prompt:'Generate a Midweek Word outline for Thursday service'},
+    3:{text:'It is Wednesday -- Prayer Meeting tonight. Prepare the prayer agenda.',action:'Generate Prayer Guide',prompt:'Generate a Prayer Guide for tonight Wednesday Prayer Meeting at Light Assembly Bible Church'},
+    4:{text:'It is Thursday -- Midweek Word and Communion tonight. Is your message ready?',action:'Generate Midweek Message',prompt:'Generate a Midweek Word message for tonight Thursday service at Light Assembly Bible Church'},
+    5:{text:'It is Friday -- Prayer Meeting tonight. The weekend is almost here.',action:'Generate Prayer Guide',prompt:'Generate a Prayer Guide for tonight Friday Prayer Meeting at Light Assembly Bible Church'},
+    6:{text:'It is Saturday -- Community Outreach day. Prepare the team and the message.',action:'Generate Outreach Brief',prompt:'Generate a Saturday Community Outreach brief and talking points for the team at Light Assembly Bible Church, Ikot Ambon'}
+  };
+  var rec=recs[day];
+  if(!rec)return;
+  document.getElementById('recText').textContent=rec.text;
+  document.getElementById('recAction').textContent=rec.action+' →';
+  document.getElementById('recCard').style.display='block';
+  document.getElementById('recCard').onclick=function(e){
+    if(e.target.id==='recDismiss')return;
+    document.getElementById('recCard').style.display='none';
+    lss('minos_ds_rec_date',today);
+    document.getElementById('chatInp').value=rec.prompt;
+    sendMessage();
+  };
+  document.getElementById('recDismiss').addEventListener('click',function(){
+    document.getElementById('recCard').style.display='none';
+    lss('minos_ds_rec_date',today);
+  });
+}
+
+// Insert rec card into chat page above messages
+var recCard=document.getElementById('recCard');
+var chatPage=document.getElementById('page-chat');
+var chatMsgs=document.getElementById('chatMsgs');
+if(recCard&&chatPage&&chatMsgs){
+  chatPage.insertBefore(recCard,chatMsgs);
+}
+
+// Show rec card after app loads
+setTimeout(showRecommendation, 1500);
 
 </script>
 </body>
