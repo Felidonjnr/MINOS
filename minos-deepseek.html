@@ -322,13 +322,20 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
     <div class="page active" id="page-chat">
       <div class="quick-bar">
         <div class="quick-row">
+          <button class="qbtn" data-q="morning">&#9728; Morning Brief</button>
           <button class="qbtn" data-q="study">&#128270; Deep Study</button>
+          <button class="qbtn" data-q="sunday">&#9962; Sunday Message</button>
+          <button class="qbtn" data-q="notes">&#128221; Sermon Notes</button>
+          <button class="qbtn" data-q="rebuild">&#127963; REBUILD Series</button>
           <button class="qbtn" data-q="greek">&#9001; Greek Word Study</button>
           <button class="qbtn" data-q="hebrew">&#9001; Hebrew Word Study</button>
           <button class="qbtn" data-q="background">&#128218; Historical Background</button>
           <button class="qbtn" data-q="scholars">&#127891; Scholars Analysis</button>
           <button class="qbtn" data-q="theology">&#9904; Theological Framework</button>
-          <button class="qbtn" data-q="rebuild">&#127963; REBUILD Deep Study</button>
+          <button class="qbtn" data-q="whatsapp">&#128241; WhatsApp 7-Day</button>
+          <button class="qbtn" data-q="facebook">&#128196; Facebook Posts</button>
+          <button class="qbtn" data-q="partner">&#129309; Partner Devotional</button>
+          <button class="qbtn" data-q="prayer">&#128591; Prayer Guide</button>
         </div>
       </div>
       <div class="chat-msgs" id="chatMsgs">
@@ -497,13 +504,20 @@ var CATS={
   other:{label:'Other',tag:'other',stripe:'other-s'}
 };
 var QUICK={
+  morning:'Generate my Morning Brief for today',
   study:'Deep Study -- all 7 scholarly layers:',
+  sunday:'Sunday Message:',
+  notes:'Sermon Notes:',
+  rebuild:'REBUILD Series -- generate the full Sunday Message for Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6',
   greek:'Greek Word Study -- give me the full Greek analysis of the word:',
   hebrew:'Hebrew Word Study -- give me the full Hebrew analysis of the word:',
   background:'Historical and Cultural Background for the text:',
   scholars:'Scholars Analysis -- what do major Bible scholars say about:',
   theology:'Theological Framework and cross-references for:',
-  rebuild:'Deep Study -- all 7 scholarly layers for REBUILD Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6'
+  whatsapp:'WhatsApp 7-Day Devotional Series:',
+  facebook:'Facebook Posts 7-Day Series:',
+  partner:'Partner Devotional:',
+  prayer:'Prayer Guide for:'
 };
 var SYS=`You are MINOS -- Ministry Intelligence & Operational System -- serving Rev. Emmanuel Udoh, senior pastor of Light Assembly Bible Church, Ikot Ambon, Akwa Ibom State, Nigeria.
 
