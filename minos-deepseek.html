@@ -254,6 +254,7 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
   body{font-size:15px}
   .read-content{padding:16px 14px 60px}
 }
+
 </style>
 </head>
 <body>
@@ -266,15 +267,15 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
     <div class="su-church">Light Assembly Bible Church<br>Rev. Emmanuel Udoh &middot; Ikot Ambon</div>
     <div class="su-card ok">
       <div class="su-ctitle">Firebase <span class="su-badge">CONNECTED</span></div>
-      <div class="su-desc">Library is pre-configured. Both phones sync in real time automatically.</div>
+      <div class="su-desc">Library pre-configured. Both phones sync automatically in real time.</div>
     </div>
     <div class="su-card">
       <div class="su-ctitle">Anthropic API Key</div>
-      <div class="su-desc">Your key is stored on this phone only. Get it from platform.deepseek.com</div>
+      <div class="su-desc">Your key is stored on this phone only. Get it from platform.anthropic.com</div>
       <label class="su-lbl">Paste your key below</label>
       <input class="su-inp" id="apiKeyInput" type="text" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
     </div>
-    <button class="su-btn" id="launchBtn">&#9889; Launch MINOS</button>
+    <button class="su-btn" id="launchBtn">&#9889; Launch MINOS DeepSeek</button>
     <div class="su-err" id="setupErr">Please paste a valid Anthropic API key</div>
   </div>
 </div>
@@ -527,9 +528,8 @@ var FBC={
   appId:'1:847823517233:web:d9eb5237172856a4870710'
 };
 var DS_URL='https://api.deepseek.com/chat/completions';
-var DS_MODEL='deepseek-chat';
-
-var COST={deepseek:{in:0.14,out:0.28}};
+var DS_CHAT='deepseek-chat';var DS_REASON='deepseek-reasoner';
+var COST={chat:{in:0.14,out:0.28},reason:{in:0.55,out:2.19}};
 var CATS={
   sermon:{label:'Sermon',tag:'sermon',stripe:'sermon-s'},
   notes:{label:'Pulpit Notes',tag:'notes',stripe:'notes-s'},
@@ -718,17 +718,13 @@ function launch(){
   setTimeout(function(){
     document.getElementById('conn').classList.remove('on');
     initFirebase();
-    toast('MINOS is live');
+    toast('MINOS DeepSeek is live');
   },1200);
 }
 
-// == AUTO LAUNCH IF KEY EXISTS ==
 window.addEventListener('load',function(){
-  if(getKey()&&getKey().length>20){
-    launch();
-  }
+  if(getKey()&&getKey().length>20){launch();}
 });
-
 // == FIREBASE ==
 function initFirebase(){
   try{
@@ -758,12 +754,12 @@ function setSyncStatus(st){
 function dbSave(item){
   if(!db)return;
   setSyncStatus('busy');
-  db.ref('claude-library/'+item.id).set(item).then(function(){setSyncStatus('live');}).catch(function(){setSyncStatus('off');toast('Sync error');});
+  db.ref('deepseek-library/'+item.id).set(item).then(function(){setSyncStatus('live');}).catch(function(){setSyncStatus('off');toast('Sync error');});
 }
 
 function dbDel(id){
   if(!db)return;
-  db.ref('claude-library/'+id).remove();
+  db.ref('deepseek-library/'+id).remove();
 }
 
 // == TABS ==
@@ -789,7 +785,11 @@ document.querySelectorAll('.qbtn').forEach(function(btn){
 });
 
 // == CHAT ==
-function pickModel(text){return 'deepseek-chat';}
+function pickModel(text){
+  var t=(text||'').toLowerCase();
+  if(t.includes('deep study')||t.includes('greek')||t.includes('hebrew')||t.includes('scholarly')||t.includes('scholars')||t.includes('theology')||t.includes('theological')||t.includes('sunday message')||t.includes('sermon notes')||t.includes('rebuild series')||t.includes('full sermon'))return DS_REASON;
+  return DS_CHAT;
+}
 
 function addMsg(role,content){
   var msgs=document.getElementById('chatMsgs');
@@ -836,14 +836,14 @@ function sendMessage(){
   document.getElementById('sendBtn').disabled=true;
   showTyping();
   var model=pickModel(text);
-var dsMessages=[{role:'system',content:SYS}].concat(chatHistory.slice(-10));
-  fetch('https://api.deepseek.com/chat/completions',{
+  var dsMessages=[{role:'system',content:buildSYS()}].concat(chatHistory.slice(-10));
+  fetch(DS_URL,{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
       'Authorization':'Bearer '+key
     },
-    body:JSON.stringify({model:'deepseek-chat',max_tokens:4000,messages:dsMessages})
+    body:JSON.stringify({model:model,max_tokens:8000,messages:dsMessages})
   })
   .then(function(r){return r.json().then(function(d){return {ok:r.ok,status:r.status,data:d};});})
   .then(function(res){
@@ -857,7 +857,8 @@ var dsMessages=[{role:'system',content:SYS}].concat(chatHistory.slice(-10));
     chatHistory.push({role:'assistant',content:reply});
     addMsg('minos',reply);
     if(res.data.usage){
-      var cost=(res.data.usage.prompt_tokens*0.14+res.data.usage.completion_tokens*0.28)/1000000;
+      var rates=model===DS_REASON?COST.reason:COST.chat;
+      var cost=((res.data.usage.prompt_tokens||0)*rates.in+(res.data.usage.completion_tokens||0)*rates.out)/1000000;
       lastCost=cost;sessionCostTotal+=cost;
       document.getElementById('costLast').textContent='$'+cost.toFixed(6);
       document.getElementById('costTotal').textContent='$'+sessionCostTotal.toFixed(6);
