@@ -254,6 +254,7 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
   body{font-size:15px}
   .read-content{padding:16px 14px 60px}
 }
+
 </style>
 </head>
 <body>
@@ -266,7 +267,7 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
     <div class="su-church">Light Assembly Bible Church<br>Rev. Emmanuel Udoh &middot; Ikot Ambon</div>
     <div class="su-card ok">
       <div class="su-ctitle">Firebase <span class="su-badge">CONNECTED</span></div>
-      <div class="su-desc">Library is pre-configured. Both phones sync in real time automatically.</div>
+      <div class="su-desc">Library pre-configured. Both phones sync automatically in real time.</div>
     </div>
     <div class="su-card">
       <div class="su-ctitle">Anthropic API Key</div>
@@ -458,6 +459,13 @@ body{font-family:'Source Serif 4',serif;font-size:17px;line-height:1.6;backgroun
     <input class="sht-inp" id="settingsGcp" type="password" placeholder="AIzaSy...">
     <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Get from console.cloud.google.com &rarr; Cloud Text-to-Speech API</div>
     <button class="sht-save" id="settingsSave">Save &amp; Reload</button>
+    <div style="margin-top:24px;border-top:2px solid var(--border);padding-top:18px">
+      <div class="sht-lbl" style="margin-top:0">AI Prompt Updater</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Type an instruction to update how MINOS generates content. Example: "Add a closing prayer to every WhatsApp devotional"</div>
+      <textarea id="promptUpdateInp" style="width:100%;background:var(--grey);border:2px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Source Serif 4',serif;font-size:14px;color:var(--text);outline:none;resize:none;min-height:80px;-webkit-appearance:none" placeholder="Type your instruction here..."></textarea>
+      <button id="promptUpdateBtn" style="width:100%;background:#b45309;color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px">&#9889; Update MINOS Intelligence</button>
+      <div id="promptUpdateStatus" style="font-size:13px;color:var(--text3);text-align:center;margin-top:8px;display:none"></div>
+    </div>
   </div>
 </div>
 
@@ -591,21 +599,11 @@ function buildSYS(){
     "",
     "INTELLIGENCE RULES:",
     "- You are a conversational ministry assistant, not just a content generator.",
-    "- ALWAYS ask clarifying questions BEFORE generating any content. Never generate without asking first unless the request already has full detail.",
-    "- Ask ALL your questions at once in a single message. Never ask one question then wait then ask another.",
-    "- Format your questions as NUMBERED questions with LETTERED options. Example:",
-    "  1. Which week of the REBUILD series?",
-    "     A. Week 1 -- The Potter -- Jeremiah 18:1-6",
-    "     B. Week 2 -- Dry Bones -- Ezekiel 37:1-10",
-    "     C. Week 3 -- Foundation -- Matthew 7:24-27",
-    "     D. Week 4 -- Fully Alive -- John 10:10",
-    "  2. Message length?",
-    "     A. Full -- 45-60 minutes",
-    "     B. Medium -- 30 minutes",
-    "     C. Short -- 20 minutes",
-    "- The person replies with just numbers and letters like: 1A, 2B -- then you generate.",
-    "- Questions must be rich, focused, and relevant to the specific content type requested.",
-    "- After generating content, suggest a logical next step with a numbered option.",
+    "- GENERATE FIRST, refine after. Do not ask questions before generating unless the request is Facebook Posts.",
+    "- For Facebook Posts only: ask numbered questions with lettered options before generating. All questions in one message. Person replies with numbers and letters like 1A 2B then generate.",
+    "- For all other content: generate immediately and fully. After generating, suggest a logical next step.",
+    "- If someone replies with just numbers like 1A 2B -- understand those as answers to your previous questions and generate immediately.",
+    "- After generating, suggest the next logical step as a numbered option.",
     "- Remember context from earlier in the conversation and reference it naturally.",
     "- Never produce generic content. Every output must feel written specifically for Light Assembly, Ikot Ambon, and Rev. Emmanuel Udoh.",
     "- If someone replies with just numbers like 1A 2B -- understand those as answers to your previous questions and generate immediately.",
@@ -621,19 +619,41 @@ function buildSYS(){
     "Compressed faithful mirror. Every section: heading, KEY POINT one bold sentence, Backup Scripture, Explanation 2-3 punchy lines. Markers: [book] ILLUSTRATION, [theater] DEMONSTRATION, [lightning] WORD STUDY, [fire] IBIBIO MOMENT. 5-day table, altar call two groups, closing prayer, POWER POINTS.",
     "",
     "=====================================",
-    "FACEBOOK POSTS FORMAT",
+    "FACEBOOK POSTS FORMAT -- VIRAL BUT HOLY",
     "=====================================",
-    "Exactly the number requested. Each post: max 150 words, ONE LINE hook opening, one biblical truth, real or biblical story, one application, engaging question or call to comment. No hashtags unless asked. End with: Light Assembly Bible Church | Ikot Ambon.",
+    "These posts must stop the scroll AND build the faith. Spiritually rich. Edifying. Captivating. Follow this exact structure for every post:",
+    "LINE 1 -- THE HOOK: One sentence. Bold. Unexpected. Creates a question in the reader mind they MUST answer. Could be a shocking truth, a provocative question, a surprising contrast, or a bold declaration. This line must make them stop scrolling.",
+    "LINE 2-3 -- THE TENSION: Build on the hook. Deepen the question. Create spiritual hunger. Do not answer yet.",
+    "LINE 4-6 -- THE REVELATION: The Word of God answers the tension. Quote scripture or reference it powerfully. This is the spiritual meat -- rich, deep, edifying.",
+    "LINE 7-8 -- THE APPLICATION: How does this truth change their day, their thinking, their faith right now. Practical but anointed.",
+    "LINE 9 -- THE CLOSE: A declaration, a question that invites engagement, or a call to share. Ends with spiritual weight not entertainment.",
+    "FOOTER: Light Assembly Bible Church | Ikot Ambon, Akwa Ibom",
+    "RULES: Maximum 150 words per post. No hashtags unless asked. Real or biblical stories only -- never fabricated. Every post must edify the body of Christ. The hook draws them in, the Word keeps them, the Spirit moves them.",
     "",
     "=====================================",
-    "WHATSAPP DEVOTIONAL FORMAT",
+    "WHATSAPP DEVOTIONAL FORMAT -- CAPTIVATING AND EDIFYING",
     "=====================================",
-    "Each day: day number and title, ONE anchor scripture quoted in full, truth statement one paragraph, brief illustration 3-4 lines, action point, declaration to speak aloud. Under 200 words per day.",
+    "Each day must be spiritually rich AND impossible to ignore. Structure:",
+    "DAY NUMBER + TITLE: Title must be captivating -- creates curiosity or speaks directly to a felt need.",
+    "OPENING HOOK: One powerful sentence that arrests attention immediately. Not generic. Specific and striking.",
+    "ANCHOR SCRIPTURE: Quoted in full. Let the Word speak first.",
+    "REVELATION: 2-3 paragraphs unpacking the scripture with depth and anointing. Not surface level. Rich truth that feeds.",
+    "REAL STORY OR ILLUSTRATION: Brief, vivid, connects truth to life. Biblical or real and verifiable -- never fabricated.",
+    "ACTION POINT: One specific thing they do today because of this Word.",
+    "DECLARATION: Speak aloud. Bold, faith-filled, personal.",
+    "Under 200 words per day. Every word must earn its place.",
     "",
     "=====================================",
-    "PARTNER DEVOTIONAL FORMAT",
+    "PARTNER DEVOTIONAL FORMAT -- WEIGHTY, PROPHETIC, CAPTIVATING",
     "=====================================",
-    "Rich, weighty, prophetic. Scripture quoted in full, Revelation 2-3 deep paragraphs, A Word For The Partner personal and honoring, Declaration 4-5 lines, Activation one specific action. These are covenant partners not donors.",
+    "These are covenant partners not donors. Every devotional must feel like a personal letter from God through Pastor Emmanuel. Structure:",
+    "OPENING HOOK: One sentence that speaks directly to where a covenant partner stands. Weighty. Prophetic. Immediately personal.",
+    "ANCHOR SCRIPTURE: Quoted in full.",
+    "REVELATION: Deep, rich unpacking -- 2-3 paragraphs. Scholarly depth meets prophetic fire. Something they have never seen in this text before.",
+    "A WORD FOR THE COVENANT PARTNER: Spoken directly to them. Honoring. Specific to their role as a partner of Light Assembly. Never generic.",
+    "DECLARATION: 4-5 lines they speak over themselves and their covenant. Bold and specific.",
+    "ACTIVATION: One concrete action that connects their faith to their partnership this week.",
+    "This devotional should leave them feeling seen by God, honored as a partner, and activated in faith.",
     "",
     "=====================================",
     "MORNING BRIEF FORMAT",
@@ -714,13 +734,9 @@ function launch(){
   },1200);
 }
 
-// == AUTO LAUNCH IF KEY EXISTS ==
 window.addEventListener('load',function(){
-  if(getKey()&&getKey().length>20){
-    launch();
-  }
+  if(getKey()&&getKey().length>20){launch();}
 });
-
 // == FIREBASE ==
 function initFirebase(){
   try{
@@ -1417,6 +1433,79 @@ if(recCard&&chatPage&&chatMsgs){
 
 // Show rec card after app loads
 setTimeout(showRecommendation, 1500);
+
+// == AI PROMPT UPDATER ==
+var customPromptAddons=[];
+
+function loadCustomPrompt(){
+  if(!db)return;
+  db.ref('minos-custom-prompt').once('value',function(snap){
+    var data=snap.val();
+    if(data&&data.addons){
+      customPromptAddons=data.addons;
+    }
+  });
+}
+
+// Inject custom addons into buildSYS
+var _origBuildSYS=buildSYS;
+buildSYS=function(){
+  var base=_origBuildSYS();
+  if(customPromptAddons.length>0){
+    return base+'\n\nCUSTOM INSTRUCTIONS FROM PASTOR/GODSHAND:\n'+customPromptAddons.join('\n');
+  }
+  return base;
+};
+
+document.getElementById('promptUpdateBtn').addEventListener('click',function(){
+  var instruction=document.getElementById('promptUpdateInp').value.trim();
+  if(!instruction){toast('Please type an instruction first');return;}
+  var status=document.getElementById('promptUpdateStatus');
+  var btn=document.getElementById('promptUpdateBtn');
+  status.style.display='block';
+  status.textContent='Analyzing and updating...';
+  btn.disabled=true;
+  var key=getKey();
+  if(!key){toast('No API key found');btn.disabled=false;return;}
+  // Ask AI to interpret the instruction and return a clean directive
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:500,
+      system:'You are a prompt engineering assistant. Convert the user instruction into a clean, precise directive that can be appended to an AI system prompt. Return ONLY the directive -- no explanation, no preamble. Maximum 3 sentences.',
+      messages:[{role:'user',content:'Convert this instruction into a system prompt directive: '+instruction}]
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.content&&data.content[0]){
+      var directive=data.content[0].text.trim();
+      customPromptAddons.push(directive);
+      // Save to Firebase so both phones get it
+      if(db){
+        db.ref('minos-custom-prompt').set({addons:customPromptAddons,updated:Date.now()});
+      }
+      status.textContent='Updated successfully. Both phones now use the new instruction.';
+      document.getElementById('promptUpdateInp').value='';
+      toast('MINOS intelligence updated');
+    }
+    btn.disabled=false;
+  })
+  .catch(function(){
+    status.textContent='Update failed. Check your connection.';
+    btn.disabled=false;
+  });
+});
+
+// Load custom prompt when Firebase connects
+setTimeout(function(){if(db)loadCustomPrompt();},2000);
 
 </script>
 </body>
