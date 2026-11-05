@@ -891,9 +891,9 @@ document.querySelectorAll('.qbtn').forEach(function(btn){
 // == CHAT ==
 function pickModel(text){
   var current=(text||'').toLowerCase();
-  var deepPattern=/deep study|greek|hebrew|scholar|theolog|sunday message|sermon|rebuild|full message|preach|exeges|biblical study|word study|doctrine|historical background|research|prayer guide|devotional|morning brief|workers class|facebook posts|whatsapp/i;
+  var deepPattern=/deep study|greek|hebrew|scholar|theolog|sunday message|sermon|rebuild|rebuilt|series progress|full message|preach|exeges|biblical study|word study|doctrine|historical background|research|prayer guide|devotional|morning brief|workers class|facebook posts|whatsapp/i;
   var trimmed=current.trim();
-  var continuation=/^(continue|go on|carry on|expand|elaborate|go deeper|explain further|make it longer|continue from|what about|and the|also explain|proceed|next|where did we stop|what did we cover|summarise that|summarize that)\b/i.test(trimmed) || (trimmed.length<90&&!deepPattern.test(trimmed));
+  var continuation=/^(continue|go on|carry on|expand|elaborate|go deeper|explain further|make it longer|continue from|what about|and the|also explain|proceed|next|where did we stop|what did we cover|summarise that|summarize that|what does that|can you explain|give me more|more detail|do the same|make it|rewrite it|include|add|remove|shorten|simplify|clarify|tell me more|why is that|how so)\\b/i.test(trimmed);
   var taskText=current;
   if(continuation){
     var prior=chatHistory.slice(-12).filter(function(m){return m.role==='user';}).reverse();
@@ -904,7 +904,6 @@ function pickModel(text){
   var thinking=deepPattern.test(taskText);
   return {model:DS_MODEL,thinking:thinking,reasoning_effort:thinking?'high':'none'};
 }
-
 function addMsg(role,content){
   var msgs=document.getElementById('chatMsgs');
   var div=document.createElement('div');
@@ -1545,14 +1544,17 @@ var customPromptAddons=[];
 var customPromptPromise=Promise.resolve();
 function loadCustomPrompt(){
   if(!db){customPromptPromise=Promise.resolve();return customPromptPromise;}
-  customPromptPromise=db.ref('minos-custom-prompt').once('value').then(function(snap){
-    var data=snap.val();
-    customPromptAddons=data&&Array.isArray(data.addons)?data.addons:[];
-    return customPromptAddons;
-  }).catch(function(error){
-    console.warn('MINOS custom instructions could not be loaded',error);
-    toast('Custom instructions unavailable; using core MINOS rules');
-    return null;
+  customPromptPromise=new Promise(function(resolve){
+    var firstValue=true;
+    db.ref('minos-custom-prompt').on('value',function(snap){
+      var data=snap.val();
+      customPromptAddons=data&&Array.isArray(data.addons)?data.addons:[];
+      if(firstValue){firstValue=false;resolve(customPromptAddons);}
+    },function(error){
+      console.warn('MINOS custom instructions could not be loaded',error);
+      toast('Custom instructions unavailable; using core MINOS rules');
+      if(firstValue){firstValue=false;resolve(null);}
+    });
   });
   return customPromptPromise;
 }
