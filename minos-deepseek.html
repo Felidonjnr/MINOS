@@ -893,12 +893,12 @@ function pickModel(text){
   var current=(text||'').toLowerCase();
   var deepPattern=/deep study|greek|hebrew|scholar|theolog|sunday message|sermon|rebuild|full message|preach|exeges|biblical study|word study|doctrine|historical background|research|prayer guide|devotional|morning brief|workers class|facebook posts|whatsapp/i;
   var trimmed=current.trim();
-  var continuation=/^(continue|go on|carry on|expand|elaborate|go deeper|explain further|make it longer|continue from|what about|and the|also explain|proceed|next|where did we stop|what did we cover|summarise that|summarize that)\\b/i.test(trimmed) || (trimmed.length<90&&!deepPattern.test(trimmed));
+  var continuation=/^(continue|go on|carry on|expand|elaborate|go deeper|explain further|make it longer|continue from|what about|and the|also explain|proceed|next|where did we stop|what did we cover|summarise that|summarize that)\b/i.test(trimmed) || (trimmed.length<90&&!deepPattern.test(trimmed));
   var taskText=current;
   if(continuation){
     var prior=chatHistory.slice(-12).filter(function(m){return m.role==='user';}).reverse();
     for(var i=0;i<prior.length;i++){
-      if(deepPattern.test(prior[i].content||'')){taskText+='\\n'+prior[i].content;break;}
+      if(deepPattern.test(prior[i].content||'')){taskText+='\n'+prior[i].content;break;}
     }
   }
   var thinking=deepPattern.test(taskText);
@@ -972,9 +972,9 @@ function sendMessage(){
     }
     var choice=res.data.choices&&res.data.choices[0]?res.data.choices[0]:null;
     var reply=choice&&choice.message&&choice.message.content?choice.message.content:'MINOS received an empty response. Please try again.';
-    if(choice&&choice.finish_reason==='length')reply+='\\n\\n**Response limit reached:** This answer may be incomplete. Ask MINOS to continue from the last completed heading; do not treat this response as complete.';
-    else if(choice&&choice.finish_reason==='content_filter')reply+='\\n\\n**Notice:** DeepSeek applied a content filter; some requested material may be missing.';
-    else if(choice&&choice.finish_reason==='insufficient_system_resource')reply+='\\n\\n**Notice:** DeepSeek interrupted generation because of temporary system-resource limits. Please retry.';
+    if(choice&&choice.finish_reason==='length')reply+='\n\n**Response limit reached:** This answer may be incomplete. Ask MINOS to continue from the last completed heading; do not treat this response as complete.';
+    else if(choice&&choice.finish_reason==='content_filter')reply+='\n\n**Notice:** DeepSeek applied a content filter; some requested material may be missing.';
+    else if(choice&&choice.finish_reason==='insufficient_system_resource')reply+='\n\n**Notice:** DeepSeek interrupted generation because of temporary system-resource limits. Please retry.';
     chatHistory.push({role:'assistant',content:reply});
     addMsg('minos',reply);
     if(res.data.usage){
@@ -1595,9 +1595,10 @@ document.getElementById('promptUpdateBtn').addEventListener('click',function(){
     var generated=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
     if(!generated)throw new Error('DeepSeek returned an empty directive.');
     var directive=generated.trim();
-    customPromptAddons.push(directive);
     if(!db)throw new Error('Firebase is not connected; the instruction was not saved.');
-    return db.ref('minos-custom-prompt').set({addons:customPromptAddons,updated:Date.now()}).then(function(){
+    var nextAddons=customPromptAddons.concat([directive]);
+    return db.ref('minos-custom-prompt').set({addons:nextAddons,updated:Date.now()}).then(function(){
+      customPromptAddons=nextAddons;
       customPromptPromise=Promise.resolve(customPromptAddons.slice());
       status.textContent='Updated successfully. The saved instruction will be used in the next request.';
       document.getElementById('promptUpdateInp').value='';
