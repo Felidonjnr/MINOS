@@ -530,6 +530,61 @@ var FBC={
   messagingSenderId:'847823517233',
   appId:'1:847823517233:web:d9eb5237172856a4870710'
 };
+
+var REBUILD_PROGRESS_PATH='minos-series-progress/rebuild';
+var REBUILD_PROGRESS_DEFAULT={
+  schemaVersion:1,
+  seriesId:'rebuild',
+  seriesTitle:'REBUILD -- What God Does With Broken Things',
+  progressStatus:'working_record',
+  verificationStatus:'pending_archive_verification',
+  lastCompletedWeek:3,
+  nextWeek:4,
+  weeks:{
+    '1':{title:'The Potter Still Has His Hands On You',scripture:'Jeremiah 18:1-6',status:'completed'},
+    '2':{title:'Dry Bones Can Dance',scripture:'Ezekiel 37:1-10',status:'completed'},
+    '3':{title:'Build On The Right Foundation',scripture:'Matthew 7:24-27',status:'completed'},
+    '4':{title:'Fully Alive',scripture:'John 10:10',status:'pending'}
+  },
+  sourceNote:'Working progress record created at Pastor’s request from the current MINOS conversation. Verify against saved sermon/library records before treating delivery history as independently confirmed.',
+  updatedAt:'2026-11-05'
+};
+var rebuildProgress=null;
+var rebuildProgressPromise=Promise.resolve(null);
+function initRebuildProgress(){
+  var ref=db.ref(REBUILD_PROGRESS_PATH);
+  rebuildProgressPromise=ref.transaction(function(current){
+    return current||REBUILD_PROGRESS_DEFAULT;
+  }).then(function(result){
+    rebuildProgress=result.snapshot.val()||null;
+    ref.on('value',function(snap){rebuildProgress=snap.val()||null;});
+    return rebuildProgress;
+  }).catch(function(error){
+    rebuildProgress=null;
+    return null;
+  });
+  return rebuildProgressPromise;
+}
+function formatRebuildProgress(progress){
+  if(!progress||!progress.weeks)return 'PERSISTED REBUILD PROGRESS: No shared progress record is currently available. Do not guess which weeks have been delivered; tell Pastor the record could not be loaded.';
+  var rows=[];
+  [1,2,3,4].forEach(function(n){
+    var w=progress.weeks[String(n)];
+    if(w)rows.push('Week '+n+': '+w.title+' | '+w.scripture+' | STATUS: '+String(w.status||'not recorded').toUpperCase());
+  });
+  return [
+    'Series: '+(progress.seriesTitle||'REBUILD'),
+    'Last completed week: '+(progress.lastCompletedWeek||'not recorded'),
+    'Next week: '+(progress.nextWeek||'not recorded'),
+    'Week-by-week record:',
+    rows.join('\n'),
+    'Record status: '+(progress.progressStatus||'not specified'),
+    'Verification: '+(progress.verificationStatus||'not specified'),
+    'Source note: '+(progress.sourceNote||'No source note recorded.'),
+    'Last updated: '+(progress.updatedAt||'not recorded')
+  ].join('\n');
+}
+
 var ANTHRO_URL='https://api.anthropic.com/v1/messages';
 var SONNET='claude-sonnet-4-20250514';
 var HAIKU='claude-haiku-4-5-20251001';
@@ -593,6 +648,9 @@ function buildSYS(){
     "",
     "OPTIONAL SERIES CONTEXT -- use the following REBUILD details ONLY when Pastor explicitly requests REBUILD or clearly selects that series. Never treat it as the default context for unrelated requests:",
     "REBUILD -- What God Does With Broken Things | Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6 | Week 2: Dry Bones Can Dance -- Ezekiel 37:1-10 | Week 3: Build On The Right Foundation -- Matthew 7:24-27 | Week 4: Fully Alive -- John 10:10",
+    "SHARED REBUILD PROGRESS RECORD -- consult this Firebase record ONLY when Pastor explicitly asks about REBUILD or requests REBUILD content:",
+    formatRebuildProgress(rebuildProgress),
+    "Do not mention REBUILD progress in unrelated requests. Do not claim a sermon was preached, delivered, or saved unless the record or library evidence confirms it.",
     "SERIES INTELLIGENCE RULE: If a request does not name a series or provide series context, treat it as a standalone request. Do not insert REBUILD titles, scriptures, themes, language, or applications unless they are relevant to the user\u2019s explicit request.",
     "",
     "INTELLIGENCE RULES:",
@@ -740,6 +798,7 @@ function initFirebase(){
   try{
     if(!firebase.apps.length)firebase.initializeApp(FBC);
     db=firebase.database();
+    initRebuildProgress();
     db.ref('claude-library').on('value',function(snap){
       items=snap.val()||{};
       updateBadges();
@@ -846,7 +905,8 @@ function sendMessage(){
   document.getElementById('sendBtn').disabled=true;
   showTyping();
   var model=pickModel(text);
-  fetch(ANTHRO_URL,{
+  Promise.resolve(rebuildProgressPromise).catch(function(){return null;}).then(function(){
+    return fetch(ANTHRO_URL,{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
@@ -854,7 +914,8 @@ function sendMessage(){
       'anthropic-version':'2023-06-01',
       'anthropic-dangerous-direct-browser-access':'true'
     },
-    body:JSON.stringify({model:model,max_tokens:4000,system:buildSYS(),messages:chatHistory.slice(-10)})
+    body:JSON.stringify({model:model,max_tokens:4000,system:buildSYS(rebuildProgress),messages:chatHistory.slice(-10)})
+    });
   })
   .then(function(r){return r.json().then(function(d){return {ok:r.ok,status:r.status,data:d};});})
   .then(function(res){
