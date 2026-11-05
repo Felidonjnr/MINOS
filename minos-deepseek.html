@@ -558,13 +558,14 @@ var rebuildProgressPromise=Promise.resolve(null);
 function initRebuildProgress(){
   var ref=db.ref(REBUILD_PROGRESS_PATH);
   rebuildProgressPromise=ref.transaction(function(current){
-    return current||REBUILD_PROGRESS_DEFAULT;
+    return current&&current.weeks?current:REBUILD_PROGRESS_DEFAULT;
   }).then(function(result){
     rebuildProgress=result.snapshot.val()||null;
     ref.on('value',function(snap){rebuildProgress=snap.val()||null;});
     return rebuildProgress;
   }).catch(function(error){
     rebuildProgress=null;
+    toast('REBUILD progress sync unavailable; check Firebase access');
     return null;
   });
   return rebuildProgressPromise;
