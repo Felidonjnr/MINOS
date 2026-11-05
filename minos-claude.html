@@ -591,11 +591,9 @@ function buildSYS(){
     "Ufan Abasi = grace of God",
     "Abasi owo = God reigns",
     "",
-    "CURRENT SERIES: REBUILD -- What God Does With Broken Things",
-    "Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6",
-    "Week 2: Dry Bones Can Dance -- Ezekiel 37:1-10",
-    "Week 3: Build On The Right Foundation -- Matthew 7:24-27",
-    "Week 4: Fully Alive -- John 10:10",
+    "OPTIONAL SERIES CONTEXT -- use the following REBUILD details ONLY when Pastor explicitly requests REBUILD or clearly selects that series. Never treat it as the default context for unrelated requests:",
+    "REBUILD -- What God Does With Broken Things | Week 1: The Potter Still Has His Hands On You -- Jeremiah 18:1-6 | Week 2: Dry Bones Can Dance -- Ezekiel 37:1-10 | Week 3: Build On The Right Foundation -- Matthew 7:24-27 | Week 4: Fully Alive -- John 10:10",
+    "SERIES INTELLIGENCE RULE: If a request does not name a series or provide series context, treat it as a standalone request. Do not insert REBUILD titles, scriptures, themes, language, or applications unless they are relevant to the user\u2019s explicit request.",
     "",
     "INTELLIGENCE RULES:",
     "- You are a conversational ministry assistant, not just a content generator.",
@@ -1276,7 +1274,7 @@ var CTX_CONFIG={
     fields:[
       {id:'ctx_title',label:'Sermon title or topic',placeholder:'e.g. The Potter and the Clay, Faith that moves mountains...'},
       {id:'ctx_text',label:'Scripture text',placeholder:'e.g. Jeremiah 18:1-6'},
-      {id:'ctx_type',label:'Type',type:'select',options:['REBUILD Series','Standalone message','Special Sunday']}
+      {id:'ctx_type',label:'Type',type:'select',options:['Standalone message','Special Sunday','REBUILD Series']}
     ],
     build:function(v){return 'Generate a complete Sunday Message. Title/Topic: '+v.ctx_title+'. Text: '+v.ctx_text+'. Type: '+v.ctx_type+'. Follow the Sunday Message format exactly -- full step-by-step preaching guide with Key Points, Backup Scriptures, Explanations, Word Studies, Illustrations, Demonstrations, Ibibio Moments, 5-Day Table, Altar Call, Power Points.';}
   },
@@ -1299,7 +1297,7 @@ var CTX_CONFIG={
   prayer:{
     title:'Prayer Guide',
     fields:[
-      {id:'ctx_theme',label:'Prayer theme or focus',placeholder:'e.g. Healing, Church growth, REBUILD series...'},
+      {id:'ctx_theme',label:'Prayer theme or focus',placeholder:'e.g. Healing, church growth, spiritual renewal...'},
       {id:'ctx_service',label:'Which service?',type:'select',options:['Sunday','Wednesday Prayer Meeting','Thursday Midweek','Friday Prayer','Tarry Night','Personal prayer']}
     ],
     build:function(v){return 'Generate a Prayer Guide for: '+v.ctx_service+'. Theme: '+v.ctx_theme+'. Follow the Prayer Guide format exactly -- opening worship direction, themed prayer sections with scriptures, declaration points, closing prayer in full.';}
