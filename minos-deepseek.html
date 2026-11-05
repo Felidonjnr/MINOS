@@ -942,7 +942,7 @@ function hideTyping(){
 function shouldRetrieveResearch(text){
   var t=(text||'').trim();
   if(!t)return false;
-  var explicit=/\b(search the web|web search|research this|research the|verify|fact.?check|check the latest|latest information|current information|current status|recent developments|as of 20\d\d|today's news|this week's news|sources? for|cite sources|give me sources|with citations|source links|evidence for|historical background|archaeolog|manuscript evidence|academic sources|scholarly sources|peer.?reviewed|commentary sources|publication history)\b/i.test(t);
+  var explicit=/\b(search the web|web search|research this|research the|verify|fact.?check|check the latest|latest information|latest update|latest on|latest news|current information|current status|current policy|current law|recent developments|what changed recently|what happened recently|as of today|as of 20\d\d|today's news|this week's news|sources? for|cite sources|give me sources|with citations|source links|evidence for|historical background|archaeolog|manuscript evidence|academic sources|scholarly sources|peer.?reviewed|commentary sources|publication history)\b/i.test(t);
   if(explicit)return true;
   var workflow=/^(deep study|scholars analysis|theological framework|greek word study|hebrew word study)\s*:/i;
   if(workflow.test(t)){
@@ -975,14 +975,14 @@ function retrieveResearch(text,key){
   }).then(function(data){
     var results=Array.isArray(data.results)?data.results:[];
     if(!results.length)return {block:'RESEARCH STATUS: Search completed but returned no results. Do not claim external verification; answer cautiously and state that no usable sources were found.',cost:0};
+    var cost=0.00075;
     var ranked=results.filter(function(item){return item&&typeof item.url==='string'&&/^https?:\/\//i.test(item.url);});
     ranked.sort(function(a,b){
       var authority=(Number(b.authority)||0)-(Number(a.authority)||0);
       return authority||((Number(b.rerank_score)||0)-(Number(a.rerank_score)||0));
     });
     ranked=ranked.slice(0,4);
-    if(!ranked.length)return {block:'RESEARCH STATUS: Search returned no usable web links. Do not claim external verification.',cost:0};
-    var cost=0.00075;
+    if(!ranked.length){recordResearchCost(cost);return {block:'RESEARCH STATUS: Search returned no usable web links. Do not claim external verification.',cost:cost};}
     var needsFetch=ranked.filter(function(item){return !item.content||item.content.length<700;}).slice(0,2);
     var fetches=needsFetch.map(function(item){
       return fetch(DS_FETCH_URL,{
