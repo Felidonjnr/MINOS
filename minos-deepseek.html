@@ -1042,12 +1042,14 @@ function sendMessage(){
   document.getElementById('sendBtn').disabled=true;
   showTyping();
   var route=pickModel(text);
+  var researchCostForTurn=0;
   Promise.all([
     Promise.resolve(rebuildProgressPromise).catch(function(){return null;}),
     Promise.resolve(customPromptPromise).catch(function(){return null;}),
     retrieveResearch(text,key)
   ]).then(function(results){
     var research=results[2];
+    researchCostForTurn=research&&research.cost?research.cost:0;
     var dsMessages=[{role:'system',content:buildSYS()}];
     if(research&&research.block)dsMessages.push({role:'system',content:research.block});
     dsMessages=dsMessages.concat(chatHistory.slice(-20));
@@ -1075,8 +1077,644 @@ function sendMessage(){
     addMsg('minos',reply);
     if(res.data.usage){
       var cost=estimateDeepSeekCost(res.data.usage);
-      lastCost=cost;sessionCostTotal+=cost;
-      document.getElementById('costLast').textContent='$'+cost.toFixed(6)+' est.';
+      lastCost=cost+researchCostForTurn;sessionCostTotal+=cost;
+      document.getElementById('costLast').textContent='
+      document.getElementById('costTotal').textContent='$'+sessionCostTotal.toFixed(6)+' est.';
+    }
+  })
+  .catch(function(e){
+    hideTyping();generating=false;document.getElementById('sendBtn').disabled=false;
+    addMsg('minos','Network error: '+e.message+'. Check your internet connection.');
+  });
+}
+document.getElementById('sendBtn').addEventListener('click',sendMessage);
+document.getElementById('chatInp').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+});
+document.getElementById('chatInp').addEventListener('input',function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,120)+'px';
+});
+
+// == LIBRARY ==
+function updateBadges(){
+  var arr=Object.values(items);
+  var n=arr.length;
+  document.getElementById('libCount').textContent=n;
+  document.getElementById('b-all').textContent=n;
+  Object.keys(CATS).forEach(function(c){
+    var el=document.getElementById('b-'+c);
+    if(el)el.textContent=arr.filter(function(i){return i.cat===c;}).length;
+  });
+}
+
+function renderLib(){
+  var arr=Object.values(items).sort(function(a,b){return (b.date||0)-(a.date||0);});
+  var q=libQ.toLowerCase();
+  var list=arr.filter(function(item){
+    var mc=activeCat==='all'||item.cat===activeCat;
+    var mq=!q||((item.title||'').toLowerCase().includes(q))||((item.content||'').toLowerCase().includes(q));
+    return mc&&mq;
+  });
+  var cards=document.getElementById('cards');
+  var empty=document.getElementById('emptyLib');
+  var nores=document.getElementById('noResults');
+  cards.innerHTML='';
+  empty.style.display='none';nores.style.display='none';
+  if(!arr.length){empty.style.display='block';return;}
+  if(!list.length){nores.style.display='block';return;}
+  list.forEach(function(item,idx){
+    var cfg=CATS[item.cat]||CATS.other;
+    var d=new Date(item.date||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    var card=document.createElement('div');
+    card.className='card';
+    card.style.animationDelay=(idx*0.04)+'s';
+    card.innerHTML='<div class="card-stripe '+cfg.stripe+'"></div><div class="card-body"><div class="card-meta"><span class="cat-tag '+cfg.tag+'">'+cfg.label+'</span><span class="card-date">'+d+'</span></div><div class="card-title">'+esc(item.title||'Untitled')+'</div><div class="card-prev">'+esc((item.content||'').slice(0,130))+'</div></div><div class="card-foot"><button class="del-btn" data-id="'+item.id+'">&#128465;</button></div>';
+    card.addEventListener('click',function(e){
+      if(!e.target.closest('.del-btn'))openRead(item.id);
+    });
+    card.querySelector('.del-btn').addEventListener('click',function(e){
+      e.stopPropagation();deleteId=this.dataset.id;
+      document.getElementById('confirmOv').classList.add('on');
+    });
+    cards.appendChild(card);
+  });
+}
+
+function esc(t){return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+document.querySelectorAll('.catbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.catbtn').forEach(function(x){x.classList.remove('active');});
+    this.classList.add('active');activeCat=this.dataset.cat;renderLib();
+  });
+});
+
+document.getElementById('libSearch').addEventListener('input',function(){
+  libQ=this.value;
+  document.getElementById('libClr').classList.toggle('on',!!libQ);
+  renderLib();
+});
+document.getElementById('libClr').addEventListener('click',function(){
+  document.getElementById('libSearch').value='';libQ='';
+  this.classList.remove('on');renderLib();
+});
+
+// == READ VIEW ==
+function openRead(id){
+  var item=items[id];if(!item)return;
+  readId=id;
+  var cfg=CATS[item.cat]||CATS.other;
+  var d=new Date(item.date||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('readTitle').textContent=item.title||'Untitled';
+  document.getElementById('readCatLbl').textContent=cfg.label+' | '+d;
+  document.getElementById('readContent').innerHTML=parseMD(item.content||'');
+  document.getElementById('readOv').classList.add('on');
+  document.querySelector('.read-body').scrollTop=0;
+  stopAudio();
+}
+
+document.getElementById('readBack').addEventListener('click',function(){
+  stopAudio();
+  document.getElementById('readOv').classList.remove('on');
+});
+
+document.getElementById('readCopyBtn').addEventListener('click',function(){
+  var item=items[readId];if(item)copyText(item.content,this);
+});
+document.getElementById('readShareBtn').addEventListener('click',function(){
+  var item=items[readId];if(item)shareText(item.content);
+});
+
+// == SAVE MODAL ==
+function openSaveModal(content){
+  saveContent=content;
+  var title=content.replace(/[#*_]/g,'').split('\n')[0].slice(0,60).trim();
+  document.getElementById('saveTitle').value=title||'Ministry Content';
+  document.querySelectorAll('.save-cat').forEach(function(x){x.classList.remove('active');});
+  document.querySelector('.save-cat[data-cat="sermon"]').classList.add('active');
+  saveCat='sermon';
+  document.getElementById('saveModal').classList.add('on');
+}
+
+document.querySelectorAll('.save-cat').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.save-cat').forEach(function(x){x.classList.remove('active');});
+    this.classList.add('active');saveCat=this.dataset.cat;
+  });
+});
+
+document.getElementById('saveModal').addEventListener('click',function(e){
+  if(e.target===this)this.classList.remove('on');
+});
+
+document.getElementById('saveConfirmBtn').addEventListener('click',function(){
+  var title=document.getElementById('saveTitle').value.trim()||'Ministry Content';
+  var id='item_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  var item={id:id,title:title,cat:saveCat,content:saveContent,date:Date.now()};
+  dbSave(item);
+  document.getElementById('saveModal').classList.remove('on');
+  toast('Saved to Library');
+});
+
+// == CONFIRM DELETE ==
+document.getElementById('confirmDel').addEventListener('click',function(){
+  if(deleteId){dbDel(deleteId);toast('Deleted');}
+  document.getElementById('confirmOv').classList.remove('on');deleteId=null;
+});
+document.getElementById('confirmKeep').addEventListener('click',function(){
+  document.getElementById('confirmOv').classList.remove('on');deleteId=null;
+});
+
+// == COPY & SHARE ==
+function stripMD(text){
+  return (text||'').replace(/#{1,6}\s/g,'').replace(/\*{1,3}/g,'').replace(/__/g,'').replace(/_/g,'').replace(/\|/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+}
+
+function copyText(text,btn){
+  var plain=stripMD(text);
+  function done(){toast('Copied');if(btn){var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o;},2000);}}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(plain).then(done).catch(function(){fbCopy(plain,done);});
+  }else fbCopy(plain,done);
+}
+
+function fbCopy(t,cb){
+  var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');cb();}catch(e){toast('Copy failed -- try long pressing the text');}
+  document.body.removeChild(ta);
+}
+
+function shareText(text){
+  var plain=stripMD(text);
+  if(navigator.share){
+    navigator.share({title:'MINOS Content',text:plain}).then(function(){toast('Shared');}).catch(function(){});
+  }else{copyText(text,null);toast('Copied -- paste where needed');}
+}
+
+function saveFile(text,title){
+  var plain=stripMD(text);
+  var fname=((title||'MINOS').replace(/[^a-zA-Z0-9 ]/g,'-').replace(/\s+/g,'-').slice(0,50))+'.txt';
+  var blob=new Blob([plain],{type:'text/plain'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+  toast('Saved as '+fname);
+}
+
+// == SETTINGS ==
+document.getElementById('settingsBtn').addEventListener('click',function(){
+  document.getElementById('settingsKey').value=getKey();
+  document.getElementById('settingsGcp').value=getGcp();
+  document.getElementById('settingsOv').classList.add('on');
+});
+document.getElementById('settingsClose').addEventListener('click',function(){
+  document.getElementById('settingsOv').classList.remove('on');
+});
+document.getElementById('settingsOv').addEventListener('click',function(e){
+  if(e.target===this)this.classList.remove('on');
+});
+document.getElementById('settingsSave').addEventListener('click',function(){
+  var k=document.getElementById('settingsKey').value.trim();
+  var gcp=document.getElementById('settingsGcp').value.trim();
+  if(k)lss('minos_ds_ak',k);
+  if(gcp)lss('minos_gcp',gcp);
+  document.getElementById('settingsOv').classList.remove('on');
+  toast('Saved -- reloading...');
+  setTimeout(function(){location.reload();},1200);
+});
+
+// == GOOGLE CLOUD TTS ==
+var ttsAudio=null;
+var ttsChunks=[];
+var ttsChunkIdx=0;
+var ttsPlaying=false;
+var ttsPaused=false;
+
+function chunkText(text){
+  var chunks=[];var max=4800;
+  while(text.length>0){
+    if(text.length<=max){chunks.push(text);break;}
+    var sl=text.slice(0,max);
+    var cut=Math.max(sl.lastIndexOf('. '),sl.lastIndexOf('! '),sl.lastIndexOf('? '));
+    if(cut<200)cut=max;else cut+=2;
+    chunks.push(text.slice(0,cut).trim());text=text.slice(cut).trim();
+  }
+  return chunks;
+}
+
+function setReadState(state){
+  var btn=document.getElementById('readAloudBtn');
+  var ctrl=document.getElementById('readCtrl');
+  var ctxt=document.getElementById('readCtrlTxt');
+  var pbtn=document.getElementById('readPauseBtn');
+  if(state==='loading'){
+    btn.textContent='Loading...';btn.classList.add('speaking');
+    ctrl.classList.add('on');ctxt.textContent='Generating audio...';
+  }else if(state==='playing'){
+    btn.textContent='Pause';btn.classList.add('speaking');
+    ctrl.classList.add('on');ctxt.textContent='Reading aloud...';pbtn.textContent='Pause';
+  }else if(state==='paused'){
+    btn.textContent='Resume';
+    ctxt.textContent='Paused';pbtn.textContent='Resume';
+  }else{
+    btn.textContent='Read Aloud';btn.classList.remove('speaking');
+    ctrl.classList.remove('on');
+  }
+}
+
+function playChunk(idx){
+  if(idx>=ttsChunks.length){stopAudio();toast('Finished reading');return;}
+  ttsChunkIdx=idx;
+  var gcpKey=getGcp();
+  if(!gcpKey){
+    toast('Add Google TTS key in Settings for Read Aloud');
+    setReadState('idle');ttsPlaying=false;return;
+  }
+  setReadState('loading');
+  fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key='+gcpKey,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      input:{text:ttsChunks[idx]},
+      voice:{languageCode:'en-US',name:'en-US-Neural2-D'},
+      audioConfig:{audioEncoding:'MP3',speakingRate:0.95}
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error){toast('TTS Error: '+d.error.message);setReadState('idle');ttsPlaying=false;return;}
+    var audio=new Audio('data:audio/mp3;base64,'+d.audioContent);
+    ttsAudio=audio;
+    audio.onended=function(){if(ttsPlaying&&!ttsPaused)playChunk(idx+1);};
+    audio.onerror=function(){playChunk(idx+1);};
+    setReadState('playing');
+    audio.play().catch(function(e){toast('Playback error');setReadState('idle');ttsPlaying=false;});
+  })
+  .catch(function(){toast('Network error during Read Aloud');setReadState('idle');ttsPlaying=false;});
+}
+
+function stopAudio(){
+  if(ttsAudio){ttsAudio.pause();ttsAudio=null;}
+  ttsPlaying=false;ttsPaused=false;setReadState('idle');
+}
+
+document.getElementById('readAloudBtn').addEventListener('click',function(){
+  if(!ttsPlaying){
+    var content=document.getElementById('readContent');
+    if(!content||!content.textContent.trim()){toast('Nothing to read');return;}
+    var text=content.textContent||content.innerText||'';
+    ttsChunks=chunkText(text.replace(/\s{2,}/g,' ').trim());
+    ttsPlaying=true;ttsPaused=false;
+    playChunk(0);
+  }else{
+    if(ttsPaused){
+      ttsPaused=false;setReadState('playing');
+      if(ttsAudio)ttsAudio.play();
+    }else{
+      ttsPaused=true;setReadState('paused');
+      if(ttsAudio)ttsAudio.pause();
+    }
+  }
+});
+
+document.getElementById('readPauseBtn').addEventListener('click',function(){
+  document.getElementById('readAloudBtn').click();
+});
+
+document.getElementById('readStopBtn').addEventListener('click',function(){stopAudio();toast('Stopped');});
+
+// == MARKDOWN ==
+function parseMD(md){
+  if(!md)return '';
+  var lines=md.split('\n'),html='',inUL=false,inOL=false,inTbl=false,trows=[];
+  function cUL(){if(inUL){html+='</ul>';inUL=false;}}
+  function cOL(){if(inOL){html+='</ol>';inOL=false;}}
+  function cT(){
+    if(!inTbl)return;
+    var t='<table>';
+    trows.forEach(function(r,i){
+      t+='<tr>';
+      r.forEach(function(c){t+=i===0?'<th>'+c+'</th>':'<td>'+c+'</td>';});
+      t+='</tr>';
+    });
+    html+=t+'</table>';inTbl=false;trows=[];
+  }
+  function il(s){
+    return s
+      .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/__(.+?)__/g,'<strong>$1</strong>')
+      .replace(/_([^_]+)_/g,'<em>$1</em>');
+  }
+  lines.forEach(function(line){
+    var isTbl=/^\|(.+)\|$/.test(line);
+    var isSep=/^\|[\s\-|:]+\|$/.test(line);
+    if(isTbl&&!isSep){
+      cUL();cOL();
+      if(!inTbl)inTbl=true;
+      trows.push(line.split('|').filter(function(_,i,a){return i>0&&i<a.length-1;}).map(function(c){return il(c.trim());}));
+      return;
+    }
+    if(isSep)return;
+    if(!isTbl&&inTbl)cT();
+    if(/^### /.test(line)){cUL();cOL();html+='<h3>'+il(line.slice(4))+'</h3>';}
+    else if(/^## /.test(line)){cUL();cOL();html+='<h2>'+il(line.slice(3))+'</h2>';}
+    else if(/^# /.test(line)){cUL();cOL();html+='<h1>'+il(line.slice(2))+'</h1>';}
+    else if(/^> /.test(line)){cUL();cOL();html+='<blockquote><p>'+il(line.slice(2))+'</p></blockquote>';}
+    else if(/^---/.test(line)){cUL();cOL();html+='<hr>';}
+    else if(/^[-*] /.test(line)){cOL();if(!inUL){html+='<ul>';inUL=true;}html+='<li>'+il(line.slice(2))+'</li>';}
+    else if(/^\d+\. /.test(line)){cUL();if(!inOL){html+='<ol>';inOL=true;}html+='<li>'+il(line.replace(/^\d+\. /,''))+'</li>';}
+    else if(line.trim()){cUL();cOL();html+='<p>'+il(line)+'</p>';}
+    else{cUL();cOL();}
+  });
+  cUL();cOL();cT();
+  return html;
+}
+
+// == INSTALL BANNER ==
+setTimeout(function(){
+  if(ls('minos_ds_installed'))return;
+  var ua=navigator.userAgent||'';
+  var banner=document.getElementById('installBanner');
+  var txt=document.getElementById('installTxt');
+  if(/iPhone|iPad/.test(ua)){
+    txt.innerHTML='Tap the Share button then <strong>Add to Home Screen</strong> to install MINOS';
+    banner.classList.add('on');
+  }else if(/Android/.test(ua)){
+    txt.innerHTML='Tap the Chrome menu then <strong>Add to Home Screen</strong> to install MINOS';
+    banner.classList.add('on');
+  }
+},3000);
+document.getElementById('installDismiss').addEventListener('click',function(){
+  document.getElementById('installBanner').classList.remove('on');
+  lss('minos_ds_installed','1');
+});
+
+// == SMART CONTEXT POPUPS ==
+var CTX_CONFIG={
+  facebook:{
+    title:'Facebook Posts',
+    fields:[
+      {id:'ctx_topic',label:'Topic or Scripture',placeholder:'e.g. Faith, John 3:16, Healing...'},
+      {id:'ctx_count',label:'How many posts?',type:'select',options:['3 posts','5 posts','7 posts']},
+      {id:'ctx_style',label:'Style',type:'select',options:['Story-based','Teaching','Motivational','Evangelistic']}
+    ],
+    build:function(v){return 'Generate '+v.ctx_count+' Facebook posts for Light Assembly Bible Church. Topic: '+v.ctx_topic+'. Style: '+v.ctx_style+'. Follow the Facebook Posts format exactly -- hook opening, biblical truth, real story, application, engaging question. End each post with Light Assembly Bible Church | Ikot Ambon.';}
+  },
+  whatsapp:{
+    title:'WhatsApp Devotional',
+    fields:[
+      {id:'ctx_topic',label:'Series theme or scripture',placeholder:'e.g. Prayer, Isaiah 40, Healing...'},
+      {id:'ctx_days',label:'How many days?',type:'select',options:['3 days','5 days','7 days']},
+      {id:'ctx_audience',label:'Who is this for?',type:'select',options:['Full congregation','Youth only','Partners only','Women']}
+    ],
+    build:function(v){return 'Generate a '+v.ctx_days+' WhatsApp devotional series for Light Assembly Bible Church. Theme: '+v.ctx_topic+'. Audience: '+v.ctx_audience+'. Follow the WhatsApp Devotional format exactly -- under 200 words per day, scripture, truth, illustration, action, declaration.';}
+  },
+  sunday:{
+    title:'Sunday Message',
+    fields:[
+      {id:'ctx_title',label:'Sermon title or topic',placeholder:'e.g. The Potter and the Clay, Faith that moves mountains...'},
+      {id:'ctx_text',label:'Scripture text',placeholder:'e.g. Jeremiah 18:1-6'},
+      {id:'ctx_type',label:'Type',type:'select',options:['Standalone message','Special Sunday','REBUILD Series']}
+    ],
+    build:function(v){return 'Generate a complete Sunday Message. Title/Topic: '+v.ctx_title+'. Text: '+v.ctx_text+'. Type: '+v.ctx_type+'. Follow the Sunday Message format exactly -- full step-by-step preaching guide with Key Points, Backup Scriptures, Explanations, Word Studies, Illustrations, Demonstrations, Ibibio Moments, 5-Day Table, Altar Call, Power Points.';}
+  },
+  notes:{
+    title:'Sermon Notes',
+    fields:[
+      {id:'ctx_title',label:'Which sermon are these notes for?',placeholder:'e.g. The Potter and the Clay, or paste the title...'},
+      {id:'ctx_text',label:'Scripture text',placeholder:'e.g. Jeremiah 18:1-6'}
+    ],
+    build:function(v){return 'Generate Sermon Notes for: '+v.ctx_title+'. Scripture: '+v.ctx_text+'. Follow the Sermon Notes format exactly -- compressed faithful mirror, Key Points, Backup Scriptures, 2-3 punchy lines per section, all markers, 5-day table, altar call two groups, closing prayer, Power Points.';}
+  },
+  partner:{
+    title:'Partner Devotional',
+    fields:[
+      {id:'ctx_topic',label:'Theme or scripture',placeholder:'e.g. Covenant faithfulness, Psalm 37...'},
+      {id:'ctx_tone',label:'Tone',type:'select',options:['Prophetic and weighty','Encouraging and warm','Teaching and deep']}
+    ],
+    build:function(v){return 'Generate a Partner Devotional. Theme: '+v.ctx_topic+'. Tone: '+v.ctx_tone+'. Follow the Partner Devotional format exactly -- rich, weighty, prophetic. Scripture quoted in full, revelation, word for the partner, declaration, activation. These are covenant partners not donors.';}
+  },
+  prayer:{
+    title:'Prayer Guide',
+    fields:[
+      {id:'ctx_theme',label:'Prayer theme or focus',placeholder:'e.g. Healing, church growth, spiritual renewal...'},
+      {id:'ctx_service',label:'Which service?',type:'select',options:['Sunday','Wednesday Prayer Meeting','Thursday Midweek','Friday Prayer','Tarry Night','Personal prayer']}
+    ],
+    build:function(v){return 'Generate a Prayer Guide for: '+v.ctx_service+'. Theme: '+v.ctx_theme+'. Follow the Prayer Guide format exactly -- opening worship direction, themed prayer sections with scriptures, declaration points, closing prayer in full.';}
+  }
+};
+
+var pendingCtx=null;
+
+function openCtx(type){
+  var cfg=CTX_CONFIG[type];
+  if(!cfg)return;
+  pendingCtx=cfg;
+  document.getElementById('ctxTitle').textContent=cfg.title;
+  var fieldsDiv=document.getElementById('ctxFields');
+  fieldsDiv.innerHTML='';
+  cfg.fields.forEach(function(f){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='margin-bottom:14px';
+    var lbl=document.createElement('label');
+    lbl.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#1e3a8a;margin-bottom:6px';
+    lbl.textContent=f.label;
+    wrap.appendChild(lbl);
+    if(f.type==='select'){
+      var sel=document.createElement('select');
+      sel.id=f.id;
+      sel.style.cssText='width:100%;background:#f5f7fa;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-family:Source Serif 4,serif;font-size:15px;color:#000;outline:none;-webkit-appearance:none';
+      f.options.forEach(function(o){var opt=document.createElement('option');opt.value=o;opt.textContent=o;sel.appendChild(opt);});
+      wrap.appendChild(sel);
+    } else {
+      var inp=document.createElement('input');
+      inp.id=f.id;inp.type='text';inp.placeholder=f.placeholder||'';
+      inp.style.cssText='width:100%;background:#f5f7fa;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-family:Source Serif 4,serif;font-size:15px;color:#000;outline:none;-webkit-appearance:none';
+      wrap.appendChild(inp);
+    }
+    fieldsDiv.appendChild(wrap);
+  });
+  document.getElementById('contextOv').style.display='flex';
+  setTimeout(function(){if(cfg.fields[0]){var first=document.getElementById(cfg.fields[0].id);if(first&&first.focus)first.focus();}},300);
+}
+
+document.getElementById('ctxGo').addEventListener('click',function(){
+  if(!pendingCtx)return;
+  var vals={};
+  var ok=true;
+  pendingCtx.fields.forEach(function(f){
+    var el=document.getElementById(f.id);
+    vals[f.id]=el?el.value.trim():'';
+    if(!vals[f.id]&&f.type!=='select'){ok=false;el.style.borderColor='#dc2626';}
+  });
+  if(!ok){toast('Please fill in all fields');return;}
+  document.getElementById('contextOv').style.display='none';
+  var prompt=pendingCtx.build(vals);
+  document.getElementById('chatInp').value=prompt;
+  sendMessage();
+  pendingCtx=null;
+});
+
+document.getElementById('ctxCancel').addEventListener('click',function(){
+  document.getElementById('contextOv').style.display='none';pendingCtx=null;
+});
+document.getElementById('contextOv').addEventListener('click',function(e){
+  if(e.target===this){this.style.display='none';pendingCtx=null;}
+});
+
+// == QUICK BUTTONS -- DROP INTO CHAT BOX ==
+document.querySelectorAll('.qbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var q=btn.dataset.q;
+    var prompt=QUICK[q]||'';
+    if(!prompt)return;
+    var inp=document.getElementById('chatInp');
+    // Buttons that need topic input -- drop into box with cursor ready
+    var needTopic=['facebook','whatsapp','sunday','notes','partner','prayer','study','rebuild'];
+    if(needTopic.indexOf(q)>-1){
+      inp.value=prompt;
+      inp.style.height='auto';
+      inp.style.height=Math.min(inp.scrollHeight,120)+'px';
+      inp.focus();
+      // Place cursor at end
+      inp.setSelectionRange(inp.value.length,inp.value.length);
+    } else {
+      // Morning Brief -- send immediately
+      inp.value=prompt;
+      sendMessage();
+    }
+  });
+});
+
+// == DAILY RECOMMENDATION CARD ==
+function showRecommendation(){
+  var today=new Date().toDateString();
+  var lastShown=ls('minos_ds_rec_date');
+  if(lastShown===today)return;
+  var now=new Date();
+  var day=now.getDay();
+  var hour=now.getHours();
+  var recs={
+    0:{text:'It is Sunday. Workers Class starts at 7am and Main Service follows.',action:'Generate Workers Class Notes',prompt:'Generate Workers Class notes for today -- topic: The Need For Workers Commitment'},
+    1:{text:'It is Monday -- good day to review yesterday and plan the week ahead.',action:'Generate Week Plan',prompt:'Help me plan the ministry week ahead for Light Assembly Bible Church'},
+    2:{text:'It is Tuesday -- midweek preparation begins. What will you preach on Thursday?',action:'Generate Midweek Outline',prompt:'Generate a Midweek Word outline for Thursday service'},
+    3:{text:'It is Wednesday -- Prayer Meeting tonight. Prepare the prayer agenda.',action:'Generate Prayer Guide',prompt:'Generate a Prayer Guide for tonight Wednesday Prayer Meeting at Light Assembly Bible Church'},
+    4:{text:'It is Thursday -- Midweek Word and Communion tonight. Is your message ready?',action:'Generate Midweek Message',prompt:'Generate a Midweek Word message for tonight Thursday service at Light Assembly Bible Church'},
+    5:{text:'It is Friday -- Prayer Meeting tonight. The weekend is almost here.',action:'Generate Prayer Guide',prompt:'Generate a Prayer Guide for tonight Friday Prayer Meeting at Light Assembly Bible Church'},
+    6:{text:'It is Saturday -- Community Outreach day. Prepare the team and the message.',action:'Generate Outreach Brief',prompt:'Generate a Saturday Community Outreach brief and talking points for the team at Light Assembly Bible Church, Ikot Ambon'}
+  };
+  var rec=recs[day];
+  if(!rec)return;
+  document.getElementById('recText').textContent=rec.text;
+  document.getElementById('recAction').textContent=rec.action+' →';
+  document.getElementById('recCard').style.display='block';
+  document.getElementById('recCard').onclick=function(e){
+    if(e.target.id==='recDismiss')return;
+    document.getElementById('recCard').style.display='none';
+    lss('minos_ds_rec_date',today);
+    document.getElementById('chatInp').value=rec.prompt;
+    sendMessage();
+  };
+  document.getElementById('recDismiss').addEventListener('click',function(){
+    document.getElementById('recCard').style.display='none';
+    lss('minos_ds_rec_date',today);
+  });
+}
+
+// Insert rec card into chat page above messages
+var recCard=document.getElementById('recCard');
+var chatPage=document.getElementById('page-chat');
+var chatMsgs=document.getElementById('chatMsgs');
+if(recCard&&chatPage&&chatMsgs){
+  chatPage.insertBefore(recCard,chatMsgs);
+}
+
+// Show rec card after app loads
+setTimeout(showRecommendation, 1500);
+
+// == AI PROMPT UPDATER ==
+var customPromptAddons=[];
+
+var customPromptPromise=Promise.resolve();
+function loadCustomPrompt(){
+  if(!db){customPromptPromise=Promise.resolve();return customPromptPromise;}
+  customPromptPromise=new Promise(function(resolve){
+    var firstValue=true;
+    db.ref('minos-custom-prompt').on('value',function(snap){
+      var data=snap.val();
+      customPromptAddons=data&&Array.isArray(data.addons)?data.addons:[];
+      if(firstValue){firstValue=false;resolve(customPromptAddons);}
+    },function(error){
+      console.warn('MINOS custom instructions could not be loaded',error);
+      toast('Custom instructions unavailable; using core MINOS rules');
+      if(firstValue){firstValue=false;resolve(null);}
+    });
+  });
+  return customPromptPromise;
+}
+// Inject custom addons into buildSYS
+var _origBuildSYS=buildSYS;
+buildSYS=function(){
+  var base=_origBuildSYS();
+  if(customPromptAddons.length>0){
+    return base+'\n\nCUSTOM INSTRUCTIONS FROM PASTOR/GODSHAND:\n'+customPromptAddons.join('\n');
+  }
+  return base;
+};
+
+document.getElementById('promptUpdateBtn').addEventListener('click',function(){
+  var instruction=document.getElementById('promptUpdateInp').value.trim();
+  if(!instruction){toast('Please type an instruction first');return;}
+  var status=document.getElementById('promptUpdateStatus');
+  var btn=document.getElementById('promptUpdateBtn');
+  status.style.display='block';
+  status.textContent='Analyzing and updating...';
+  btn.disabled=true;
+  var key=getKey();
+  if(!key){toast('No API key found');btn.disabled=false;return;}
+  fetch(DS_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({
+      model:DS_MODEL,
+      thinking:{type:'disabled'},
+      reasoning_effort:'none',
+      max_tokens:500,
+      messages:[
+        {role:'system',content:'You are a careful prompt-instruction editor. Convert the user instruction into one concise, safe, unambiguous directive for MINOS. Do not add facts, change church policy, override the evidence and non-fabrication rules, or create instructions that claim capabilities MINOS does not have. Return only the directive, no preamble, maximum 3 sentences.'},
+        {role:'user',content:'Convert this instruction into a system prompt directive: '+instruction}
+      ]
+    })
+  })
+  .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data&&data.error&&data.error.message||'DeepSeek API error');return data;});})
+  .then(function(data){
+    var generated=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
+    if(!generated)throw new Error('DeepSeek returned an empty directive.');
+    var directive=generated.trim();
+    if(!db)throw new Error('Firebase is not connected; the instruction was not saved.');
+    var nextAddons=customPromptAddons.concat([directive]);
+    return db.ref('minos-custom-prompt').set({addons:nextAddons,updated:Date.now()}).then(function(){
+      customPromptAddons=nextAddons;
+      customPromptPromise=Promise.resolve(customPromptAddons.slice());
+      status.textContent='Updated successfully. The saved instruction will be used in the next request.';
+      document.getElementById('promptUpdateInp').value='';
+      toast('MINOS intelligence updated');
+    });
+  })
+  .catch(function(error){
+    status.textContent='Update failed: '+(error&&error.message?error.message:'Check your connection.');
+  })
+  .then(function(){btn.disabled=false;});
+});
+</script>
+</body>
+</html>
++lastCost.toFixed(6)+' est. total for this response';
       document.getElementById('costTotal').textContent='$'+sessionCostTotal.toFixed(6)+' est.';
     }
   })
