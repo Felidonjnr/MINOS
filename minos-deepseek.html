@@ -1078,7 +1078,7 @@ function sendMessage(){
     if(res.data.usage){
       var cost=estimateDeepSeekCost(res.data.usage);
       lastCost=cost+researchCostForTurn;sessionCostTotal+=cost;
-      document.getElementById('costLast').textContent='
+      document.getElementById('costLast').textContent=String(lastCost)+' est. total for this response';
     }
   })
   .catch(function(e){
