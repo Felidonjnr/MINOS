@@ -893,7 +893,7 @@ function pickModel(text){
   var current=(text||'').toLowerCase();
   var deepPattern=/deep study|greek|hebrew|scholar|theolog|sunday message|sermon|rebuild|rebuilt|series progress|full message|preach|exeges|biblical study|word study|doctrine|historical background|research|prayer guide|devotional|morning brief|workers class|facebook posts|whatsapp/i;
   var trimmed=current.trim();
-  var continuation=/^(continue|go on|carry on|expand|elaborate|go deeper|explain further|make it longer|continue from|what about|and the|also explain|proceed|next|where did we stop|what did we cover|summarise that|summarize that|what does that|can you explain|give me more|more detail|do the same|make it|rewrite it|include|add|remove|shorten|simplify|clarify|tell me more|why is that|how so)\\b/i.test(trimmed);
+  var continuation=/^(continue|go on|carry on|expand|elaborate|go deeper|explain further|make it longer|continue from|what about|and the|also explain|proceed|next|where did we stop|what did we cover|summarise that|summarize that|what does that|can you explain|give me more|more detail|do the same|make it|rewrite it|include|add|remove|shorten|simplify|clarify|tell me more|why is that|how so)\b/i.test(trimmed);
   var taskText=current;
   if(continuation){
     var prior=chatHistory.slice(-12).filter(function(m){return m.role==='user';}).reverse();
